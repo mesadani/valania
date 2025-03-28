@@ -34,7 +34,10 @@ class RacesAdmin(admin.ModelAdmin):
 
 @admin.register(Heroes)
 class HeroesAdmin(admin.ModelAdmin):
-    list_display = ('name', image_tag)
+    list_display = ('name','race.name', image_tag)
+    def race_name(self, obj):
+        return obj.race.name
+    race_name.short_description = 'Race'
 
 @admin.register(CombatUnits)
 class CombatUnitsAdmin(admin.ModelAdmin):
