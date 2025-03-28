@@ -28,7 +28,7 @@ class Objects(models.Model):
     description = models.TextField()
     objectType = models.ForeignKey(ObjectTypes, on_delete=models.CASCADE)
     objectCategory = models.ForeignKey(ObjectCategorys, on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='objects/images/', blank=True, null=True)  # Nuevo campo de imagen
+    image = CloudinaryField('image')
 
 
     def __str__(self):
@@ -59,7 +59,7 @@ class craftingRequirements(models.Model):
 class Races(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField() 
-    image = models.ImageField(upload_to='races/images/', blank=True, null=True)  # Nuevo campo de imagen
+    image = CloudinaryField('image')
 
 
     def __str__(self):
@@ -88,7 +88,7 @@ class Heroes(models.Model):
     location = models.CharField(max_length=200)
     description = models.TextField()
 
-    image = models.ImageField(upload_to='heroes/images/', blank=True, null=True)  # Nuevo campo de imagen
+    image = CloudinaryField('image')
 
 
     def __str__(self):
@@ -112,7 +112,7 @@ class CombatUnits(models.Model):
     troopPoints = models.IntegerField()
     description = models.TextField()
 
-    image = models.ImageField(upload_to='combatUnits/images/', blank=True, null=True)  # Nuevo campo de imagen
+    image = CloudinaryField('image')
 
 
     def __str__(self):
