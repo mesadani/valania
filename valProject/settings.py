@@ -138,12 +138,10 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),  # Aquí añades tu carpeta de archivos estáticos, si tienes una
-]
+STATICFILES_DIRS = BASE_DIR / 'static'
 
 # Directorio donde se recopilan los archivos estáticos para producción
-STATIC_ROOT =os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 
 # URL para acceder a los archivos estáticos
