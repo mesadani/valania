@@ -5,7 +5,7 @@ from cloudinary.models import CloudinaryField
 class Professions(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField() 
-    image = CloudinaryField('image')
+    image = CloudinaryField('image', folder='professions')
 
 
     def __str__(self):
@@ -28,7 +28,7 @@ class Objects(models.Model):
     description = models.TextField()
     objectType = models.ForeignKey(ObjectTypes, on_delete=models.CASCADE)
     objectCategory = models.ForeignKey(ObjectCategorys, on_delete=models.CASCADE)
-    image = CloudinaryField('image')
+    image = CloudinaryField('image', folder='objects')
 
 
     def __str__(self):
@@ -59,7 +59,7 @@ class craftingRequirements(models.Model):
 class Races(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField() 
-    image = CloudinaryField('image')
+    image = CloudinaryField('image', folder='races')
 
 
     def __str__(self):
@@ -88,7 +88,7 @@ class Heroes(models.Model):
     location = models.CharField(max_length=200)
     description = models.TextField()
 
-    image = CloudinaryField('image')
+    image = CloudinaryField('image', folder='heroes')
 
 
     def __str__(self):
@@ -112,7 +112,7 @@ class CombatUnits(models.Model):
     troopPoints = models.IntegerField()
     description = models.TextField()
 
-    image = CloudinaryField('image')
+    image = CloudinaryField('image', folder='combatUnits')
 
 
     def __str__(self):
