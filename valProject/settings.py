@@ -79,7 +79,7 @@ WSGI_APPLICATION = 'valProject.wsgi.application'
 
 DATABASES = {
   'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'mysql.connector.django',
         'NAME': 'railway',
         'USER': 'root',
         'PASSWORD': 'LgRkCRJstseaSJLfMZwSPSEcHlkBLekE',
