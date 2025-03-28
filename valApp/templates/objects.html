@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="professions-container">
+    {% for profession in professions %}
+    <div class="profession-button">
+        
+        <span>{{ profession.name }}</span>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

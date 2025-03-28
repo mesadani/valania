@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="races-menu">
+    {% for race in races %}
+    <div class="race-item" onclick="filterByRace('{{ race.id }}')">
+        <img src="{{ race.image.url }}" alt="{{ race.name }}" class="race-image">
+        <span>{{ race.name }}</span>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="heroes-container">
+    {% for heroe in heroes %}
+    <div class="hero-card" data-race-id="{{ heroe.race.id }}" onclick="toggleCard(this)">
+        <img src="{{ heroe.image.url }}" alt="{{ heroe.name }}" class="hero-image">
+        <div class="hero-info">
+            <h2>{{ heroe.name }}</h2>
+            <div class="hero-details">
+                <p><strong>Type:</strong> {{ heroe.type.name }}</p>
+                <p><strong>Race:</strong> {{ heroe.race.name }}</p>
+                <p><strong>Supply:</strong> {{ heroe.supply }}</p>
+                <p><strong>Rarity:</strong> {{ heroe.rarity.name }}</p>
+                <p><strong>Price:</strong> {{ heroe.price }}</p>
+                <p><strong>Location:</strong> {{ heroe.location }}</p>
+                <p>{{ heroe.description }}</p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    <script>
+        function toggleCard(card) {
+            card.classList.toggle('expanded');
+        }
+        function filterByRace(raceId) {
+            const heroCards = document.querySelectorAll('.hero-card');
+            heroCards.forEach(card => {
+                if (card.getAttribute('data-race-id') === raceId || raceId === 'all') {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+        
+        </script>
+</div>
+{% endblock %}

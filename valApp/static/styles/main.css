@@ -1,0 +1,181 @@
+body {
+    font-family: "__EB_Garamond_c29382", "__EB_Garamond_Fallback_c29382", serif;
+    background: url('../images/fondo.webp') no-repeat center center fixed;
+    background-size: cover;
+    color: #ddd;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    height: 100vh;
+    text-align: center;
+}
+.professions-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+}
+
+.profession-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 150px;
+    height: 150px;
+    background-color: #34495e;
+    color: white;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.profession-button:hover {
+    background-color: #1abc9c;
+    transform: scale(1.05);
+}
+
+.profession-image {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 5px;
+}
+.heroes-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+}
+
+.hero-card {
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+    width: 300px;
+    transition: transform 0.3s;
+}
+
+.hero-card:hover {
+    transform: scale(1.05);
+}
+
+.hero-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.hero-info {
+    padding: 15px;
+    color: #ddd;
+    text-align: left;
+}
+
+.hero-info h2 {
+    color: #f1c40f;
+    margin-bottom: 10px;
+}
+
+.hero-info p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+.content {
+    flex-grow: 1;
+    padding: 40px;
+    margin-left: 290px; /* Asegúrate de que este margen sea suficiente */
+    border-left: 3px solid #b8860b;
+    min-height: 100vh;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.1);
+}
+
+.heroes-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+}
+.hero-card {
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+    width: 300px;
+    transition: transform 0.3s, max-height 0.3s ease-in-out;
+    cursor: pointer;
+    max-height: 250px; /* Altura inicial para mostrar solo la imagen y el nombre */
+}
+
+.hero-card.expanded {
+    max-height: 600px; /* Altura suficiente para mostrar todos los detalles */
+}
+
+.hero-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.hero-info {
+    padding: 15px;
+    color: #ddd;
+    text-align: left;
+}
+
+.hero-info h2 {
+    color: #f1c40f;
+    margin-bottom: 10px;
+}
+
+.hero-details {
+    display: none; /* Ocultar detalles inicialmente */
+}
+
+.hero-card.expanded .hero-details {
+    display: block; /* Mostrar detalles cuando la tarjeta está expandida */
+}
+
+.races-menu {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+    background-color: #2c3e50;
+    border-bottom: 3px solid #b8860b;
+}
+
+.race-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.race-item:hover {
+    transform: scale(1.1);
+}
+
+.race-image {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-bottom: 5px;
+}
+
+.race-item span {
+    color: white;
+    font-size: 14px;
+}
