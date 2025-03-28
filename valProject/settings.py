@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
 from pathlib import Path
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -28,7 +31,7 @@ SECRET_KEY = 'django-insecure-9*=e2zikxfbi_=@&=een=awwz0t9-*-djrqug%g$z#(%hmink7
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["valania.onrender.com","valania-production.up.railway.app"]
 
 CSRF_TRUSTED_ORIGINS = [
     'https://valania-production.up.railway.app',
@@ -43,11 +46,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'whitenoise.runserver_nostatic',  # Asegúrate de incluir esta línea
     'valApp',
+    'cloudinary',
+    'cloudinary_storage',    
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Asegúrate de que esta línea esté incluida
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -78,40 +85,34 @@ TEMPLATES = [
 WSGI_APPLICATION = 'valProject.wsgi.application'
 
 # Configuration       
-
+cloudinary.config( 
+    cloud_name = "dptqvgufe", 
+    api_key = "743649664227257", 
+    api_secret = "ZmQ5Z-Maq91_2yDTdsElhl8hzY4", # Click 'View API Keys' above to copy your API secret
+    secure=True
+)
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-#DATABASES = {
-#  'default': {
-#        'ENGINE': 'mysql.connector.django',
- #       'NAME': 'railway',
- #       'USER': 'root',
- #       'PASSWORD': 'LgRkCRJstseaSJLfMZwSPSEcHlkBLekE',
-##        'HOST': 'mysql.railway.internal',  # O la IP del servidor MySQL
-#        'PORT': '3306',  # Puerto por defecto de MySQL
- #       'OPTIONS': {
- #           'charset': 'utf8mb4',  # Soporte para emojis y caracteres especiales
- #       },
- #   }
-#}
-
 DATABASES = {
   'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'mysql.connector.django',
         'NAME': 'railway',
         'USER': 'root',
         'PASSWORD': 'LgRkCRJstseaSJLfMZwSPSEcHlkBLekE',
-        'HOST': 'shortline.proxy.rlwy.net',  # O la IP del servidor MySQL
-        'PORT': '51434',  # Puerto por defecto de MySQL
+        'HOST': 'mysql.railway.internal',  # O la IP del servidor MySQL
+        'PORT': '3306',  # Puerto por defecto de MySQL
         'OPTIONS': {
             'charset': 'utf8mb4',  # Soporte para emojis y caracteres especiales
         },
     }
 }
+
+
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -158,3 +159,4 @@ STATICFILES_DIRS = [str(BASE_DIR / 'static')]
 # Directorio donde se recopilan los archivos estáticos para producción
 STATIC_ROOT = BASE_DIR / 'staticfiles'
  
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
