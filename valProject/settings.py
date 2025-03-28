@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-9*=e2zikxfbi_=@&=een=awwz0t9-*-djrqug%g$z#(%hmink7
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["valania.onrender.com","valania-production.up.railway.app"]
+ALLOWED_HOSTS = ['*']
 
 CSRF_TRUSTED_ORIGINS = [
     'https://valania-production.up.railway.app',
@@ -82,11 +82,11 @@ WSGI_APPLICATION = 'valProject.wsgi.application'
 
 DATABASES = {
   'default': {
-        'ENGINE': 'mysql.connector.django',
-        'NAME': 'railway',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'valania',
         'USER': 'root',
-        'PASSWORD': 'LgRkCRJstseaSJLfMZwSPSEcHlkBLekE',
-        'HOST': 'mysql.railway.internal',  # O la IP del servidor MySQL
+        'PASSWORD': '',
+        'HOST': 'localhost',  # O la IP del servidor MySQL
         'PORT': '3306',  # Puerto por defecto de MySQL
         'OPTIONS': {
             'charset': 'utf8mb4',  # Soporte para emojis y caracteres especiales
