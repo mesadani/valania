@@ -143,5 +143,5 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Esto le dice a Django que busque archivos estáticos en el directorio correcto
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),  # Ajusta la ruta si tienes tu carpeta estática en otro lugar
+    os.path.join(BASE_DIR, 'staticfiles'),  # Ajusta la ruta si tienes tu carpeta estática en otro lugar
 ]
