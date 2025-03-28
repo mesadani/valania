@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
 from pathlib import Path
-
+import dj_database_url
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -77,17 +77,24 @@ WSGI_APPLICATION = 'valProject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'valania',  # Nombre de la base de datos
-        'USER': 'valania',  # Usuario
-        'PASSWORD': 'Q0X64slI52tvtXRJmPoOh1ZmtTd8kGLJ',  # Contraseña
-        'HOST': 'dpg-cvj6rcq4d50c73bl59t0-a',  # Host
-        'PORT': '5432',  # Puerto (por defecto 5432)
+  'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'railway',
+        'USER': 'root',
+        'PASSWORD': 'LgRkCRJstseaSJLfMZwSPSEcHlkBLekE',
+        'HOST': 'mysql.railway.internal',  # O la IP del servidor MySQL
+        'PORT': '3306',  # Puerto por defecto de MySQL
+        'OPTIONS': {
+            'charset': 'utf8mb4',  # Soporte para emojis y caracteres especiales
+        },
     }
 }
+
+DATABASES = {
+    'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
+}
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
