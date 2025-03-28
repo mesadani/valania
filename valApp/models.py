@@ -1,11 +1,11 @@
 from django.db import models
-
+from cloudinary.models import CloudinaryField
 # Create your models here.
 
 class Professions(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField() 
-    image = models.ImageField(upload_to='professions/images/', blank=True, null=True)  # Nuevo campo de imagen
+    image = CloudinaryField('image')
 
 
     def __str__(self):

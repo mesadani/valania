@@ -5,4 +5,5 @@ pillow==11.1.0
 sqlparse==0.5.3
 tzdata==2025.2
 gunicorn
-whitenoise
+cloudinary==1.36.0
+django-cloudinary-storage==0.3.0

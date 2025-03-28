@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
 from pathlib import Path
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -45,7 +48,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'whitenoise.runserver_nostatic',  # Asegúrate de incluir esta línea
     'valApp',
-    
+    'cloudinary',
+    'cloudinary_storage',    
 ]
 
 MIDDLEWARE = [
@@ -79,6 +83,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'valProject.wsgi.application'
 
+# Configuration       
+cloudinary.config( 
+    cloud_name = "dptqvgufe", 
+    api_key = "743649664227257", 
+    api_secret = "ZmQ5Z-Maq91_2yDTdsElhl8hzY4", # Click 'View API Keys' above to copy your API secret
+    secure=True
+)
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
