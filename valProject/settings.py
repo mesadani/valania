@@ -79,9 +79,15 @@ WSGI_APPLICATION = 'valProject.wsgi.application'
 
 
 DATABASES = {
-    'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'valania',  # Nombre de la base de datos
+        'USER': 'valania',  # Usuario
+        'PASSWORD': 'Q0X64slI52tvtXRJmPoOh1ZmtTd8kGLJ',  # Contraseña
+        'HOST': 'dpg-cvj6rcq4d50c73bl59t0-a',  # Host
+        'PORT': '5432',  # Puerto (por defecto 5432)
+    }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
