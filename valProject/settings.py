@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'valApp',
+    
 ]
 
 MIDDLEWARE = [
@@ -142,6 +143,7 @@ STATICFILES_DIRS = [
 ]
 
 # Directorio donde se recopilan los archivos estáticos para producción
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 
 # URL para acceder a los archivos estáticos
