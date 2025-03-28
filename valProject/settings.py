@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
 from pathlib import Path
-
+import dj_database_url
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -77,18 +77,9 @@ WSGI_APPLICATION = 'valProject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+
 DATABASES = {
-  'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'valania',
-        'USER': 'root',
-        'PASSWORD': '',
-        'HOST': 'localhost',  # O la IP del servidor MySQL
-        'PORT': '3306',  # Puerto por defecto de MySQL
-        'OPTIONS': {
-            'charset': 'utf8mb4',  # Soporte para emojis y caracteres especiales
-        },
-    }
+    'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
 }
 
 
