@@ -30,6 +30,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["valania.onrender.com","valania-production.up.railway.app"]
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://valania-production.up.railway.app',
+]
 
 # Application definition
 
