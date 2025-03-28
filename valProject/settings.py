@@ -137,3 +137,11 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Esto le dice a Django que busque archivos estáticos en el directorio correcto
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),  # Ajusta la ruta si tienes tu carpeta estática en otro lugar
+]
