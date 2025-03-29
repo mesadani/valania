@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 from .models import (
     Professions, Crafting, craftingRequirements, Objects, ObjectCategorys, ObjectTypes,
-    Races, Rarities, RolesCombatUnits, CombatUnits, HeroeTypes, Heroes
+    Races, Rarities, RolesCombatUnits, CombatUnits, HeroeTypes, Heroes, HeroeRoles
 )
 
 # Método común para mostrar imágenes
@@ -49,3 +49,4 @@ admin.site.register(ObjectCategorys)
 admin.site.register(Rarities)
 admin.site.register(HeroeTypes)
 admin.site.register(RolesCombatUnits)
+admin.site.register(HeroeRoles)
