@@ -88,7 +88,7 @@ class HeroeRoles(models.Model):
 class Heroes(models.Model):
     name = models.CharField(max_length=200)
     type = models.ForeignKey(HeroeTypes, on_delete=models.CASCADE)
-    role = models.ForeignKey(HeroeRoles, on_delete=models.CASCADE)
+    race = models.ForeignKey(HeroeRoles, on_delete=models.CASCADE)
     race = models.ForeignKey(Races, on_delete=models.CASCADE)
     supply = models.IntegerField()
     rarity = models.ForeignKey(Rarities, on_delete=models.CASCADE)
