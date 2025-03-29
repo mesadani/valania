@@ -1,11 +1,11 @@
 from django.db import models
-from cloudinary.models import CloudinaryField
+
 # Create your models here.
 
 class Professions(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField() 
-    image = CloudinaryField('image', folder='professions')
+    image = models.ImageField(upload_to='objects/images/', blank=True, null=True)  # Nuevo campo de imagen
 
 
     def __str__(self):
@@ -28,7 +28,7 @@ class Objects(models.Model):
     description = models.TextField()
     objectType = models.ForeignKey(ObjectTypes, on_delete=models.CASCADE)
     objectCategory = models.ForeignKey(ObjectCategorys, on_delete=models.CASCADE)
-    image = CloudinaryField('image', folder='objects')
+    image = models.ImageField(upload_to='objects/images/', blank=True, null=True)  # Nuevo campo de imagen
 
 
     def __str__(self):
@@ -59,7 +59,7 @@ class craftingRequirements(models.Model):
 class Races(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField() 
-    image = CloudinaryField('image', folder='races')
+    image = models.ImageField(upload_to='objects/images/', blank=True, null=True)  # Nuevo campo de imagen
 
 
     def __str__(self):
@@ -88,7 +88,7 @@ class HeroeRoles(models.Model):
 class Heroes(models.Model):
     name = models.CharField(max_length=200)
     type = models.ForeignKey(HeroeTypes, on_delete=models.CASCADE)
-    race = models.ForeignKey(HeroeRoles, on_delete=models.CASCADE)
+    role = models.ForeignKey(HeroeRoles, on_delete=models.CASCADE)
     race = models.ForeignKey(Races, on_delete=models.CASCADE)
     supply = models.IntegerField()
     rarity = models.ForeignKey(Rarities, on_delete=models.CASCADE)
@@ -96,7 +96,7 @@ class Heroes(models.Model):
     location = models.CharField(max_length=200)
     description = models.TextField()
 
-    image = CloudinaryField('image', folder='heroes')
+    image = models.ImageField(upload_to='objects/images/', blank=True, null=True)  # Nuevo campo de imagen
 
 
     def __str__(self):
@@ -120,7 +120,7 @@ class CombatUnits(models.Model):
     troopPoints = models.IntegerField()
     description = models.TextField()
 
-    image = CloudinaryField('image', folder='combatUnits')
+    image = models.ImageField(upload_to='objects/images/', blank=True, null=True)  # Nuevo campo de imagen
 
 
     def __str__(self):
