@@ -1,12 +1,188 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<style>
+    .professions-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.profession-button {
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.profession-button:hover {
+    background-color: #e0e0e0;
+}
+
+#profession-details {
+    margin-top: 20px;
+}
+
+#profession-details h1 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+#profession-details p {
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+#profession-details ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+#profession-details li {
+    margin-bottom: 15px;
+    padding-left: 20px;
+    position: relative;
+}
+
+#profession-details li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 10px;
+    height: 10px;
+    background-color: #007bff;
+    border-radius: 50%;
+}
+
+#profession-details li ul {
+    margin-top: 10px;
+    padding-left: 20px;
+    border-left: 2px solid #ccc;
+}
+
+#profession-details li ul li {
+    margin-bottom: 5px;
+    padding-left: 20px;
+    position: relative;
+}
+
+#profession-details li ul li::before {
+    content: '';
+    position: absolute;
+    left: -10px;
+    top: 5px;
+    width: 6px;
+    height: 6px;
+    background-color: #007bff;
+    border-radius: 50%;
+}
+
+.crafting-image {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    margin-right: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    float: left;
+}
+
+</style>
 <div class="professions-container">
     {% for profession in professions %}
-    <div class="profession-button">
-        
+    <div class="profession-button" data-id="{{ profession.id }}">
         <span>{{ profession.name }}</span>
     </div>
     {% endfor %}
 </div>
+
+<div id="profession-details">
+    <!-- Aquí se cargarán los detalles de la profesión -->
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('.profession-button').click(function() {
+            var professionId = $(this).data('id');
+            
+            $.ajax({
+                url: '/professions/' + professionId + '/',
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    var html = '<h1>' + data.profession_name + '</h1>';
+                    html += '<p>' + data.profession_description + '</p>';
+                    html += '<div class="tab">';
+                    
+                    // Crear pestañas para cada nivel
+                    for (var level in data.crafting_details_by_level) {
+                        html += '<button class="tablinks" onclick="openTab(event, \'Level' + level + '\')">Nivel ' + level + '</button>';
+                    }
+                    
+                    html += '</div>';
+                    
+                    // Crear contenido de pestañas para cada nivel
+                    for (var level in data.crafting_details_by_level) {
+                        html += '<div id="Level' + level + '" class="tabcontent">';
+                        data.crafting_details_by_level[level].forEach(function(detail) {
+                            html += '<div class="accordion">';
+                            html += '<img src="' + detail.image + '" alt="' + detail.crafting_name + '" class="crafting-image">';
+                            html += '<strong>' + detail.crafting_name + '</strong>';
+                            html += '<div class="panel">';
+                            html += '<ul>';
+                            html += '<li>Cantidad: ' + detail.quantity + '</li>';
+                            html += '<li>Probabilidad: ' + detail.probability + '</li>';
+                            html += '<li>Tiempo: ' + detail.time + '</li>';
+                            html += '</ul>';
+                            html += '</div></div>';
+                        });
+                        html += '</div>';
+                    }
+                    
+                    $('#profession-details').html(html);
+                    
+                    // Inicializar funcionalidad de acordeón
+                    var acc = document.getElementsByClassName("accordion");
+                    for (var i = 0; i < acc.length; i++) {
+                        acc[i].addEventListener("click", function() {
+                            this.classList.toggle("active");
+                            var panel = this.nextElementSibling;
+                            if (panel.style.display === "block") {
+                                panel.style.display = "none";
+                            } else {
+                                panel.style.display = "block";
+                            }
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error al cargar los detalles de la profesión:', error);
+                }
+            });
+        });
+    });
+    
+    // Función para abrir pestañas
+    function openTab(evt, tabName) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+        tablinks = document.getElementsByClassName("tablinks");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
+    </script>
+    
+
+
 {% endblock %}

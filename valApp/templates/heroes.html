@@ -28,21 +28,47 @@
         </div>
     </div>
     {% endfor %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        function toggleCard(card) {
-            card.classList.toggle('expanded');
-        }
-        function filterByRace(raceId) {
-            const heroCards = document.querySelectorAll('.hero-card');
-            heroCards.forEach(card => {
-                if (card.getAttribute('data-race-id') === raceId || raceId === 'all') {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
+    $(document).ready(function() {
+        $('.profession-button').click(function() {
+            var professionId = $(this).data('id');
+            
+            $.ajax({
+                url: '/professions/' + professionId + '/',
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    var html = '<h1>' + data.profession_name + '</h1>';
+                    html += '<p>' + data.profession_description + '</p>';
+                    html += '<h2>Objetos por Nivel</h2><ul>';
+                    
+                    data.crafting_details.forEach(function(detail) {
+                        html += '<li><strong>Nivel ' + detail.level + ':</strong> ' + detail.crafting_name;
+                        html += '<ul>';
+                        html += '<li>Cantidad: ' + detail.quantity + '</li>';
+                        html += '<li>Probabilidad: ' + detail.probability + '</li>';
+                        html += '<li>Tiempo: ' + detail.time + '</li>';
+                        html += '<li>Requisitos:<ul>';
+                        
+                        detail.requirements.forEach(function(req) {
+                            html += '<li>' + req.name + ' - Cantidad: ' + req.quantity + '</li>';
+                        });
+                        
+                        html += '</ul></li></ul></li>';
+                    });
+                    
+                    html += '</ul>';
+                    
+                    $('#profession-details').html(html);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error al cargar los detalles de la profesión:', error);
                 }
             });
-        }
-        
-        </script>
+        });
+    });
+    </script>
+    
 </div>
 {% endblock %}
