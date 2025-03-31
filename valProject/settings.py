@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     'valApp',
     'cloudinary',
     'cloudinary_storage',    
-    'chat',
+    'solana',
 ]
 
 MIDDLEWARE = [
