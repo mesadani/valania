@@ -17,4 +17,3 @@ torchvision
 scikit-learn
 solders
 base58
-base64
