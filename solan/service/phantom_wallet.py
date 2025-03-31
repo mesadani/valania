@@ -126,7 +126,7 @@ def extract_nft_info(nft_data):
 
             if "valannia" in uri.lower():
                 metadata = obtener_json_desde_uri(uri)  # Obtener datos del JSON
-                if amount > 0:
+                if amount != '0':
                     nombreBd = Objects.objects.filter(name=metadata['name']).first()
                     if nombreBd:
                         nombreBd.mint = uri
