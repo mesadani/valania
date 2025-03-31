@@ -1,0 +1,24 @@
+<html>
+<head>
+    <title>Chatbot</title>
+</head>
+<body>
+    <div>
+        <h2>Chat con el IA</h2>
+        <input type="text" id="user_input" placeholder="Escribe tu pregunta...">
+        <button onclick="sendMessage()">Enviar</button>
+        <p id="response"></p>
+    </div>
+
+    <script>
+    function sendMessage() {
+        const userInput = document.getElementById('user_input').value;
+        fetch(`/chat/?user_input=${userInput}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('response').innerText = data.response;
+            });
+    }
+    </script>
+</body>
+</html>

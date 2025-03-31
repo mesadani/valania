@@ -1,0 +1,44 @@
+# myapp/views.py
+from django.shortcuts import render
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .service.phantom_wallet import get_balance, get_nfts
+import json
+
+# Vista que renderiza el HTML donde el frontend puede interactuar con Phantom
+def connect(request):
+    return render(request, 'connect.html')  # Asegúrate de que el archivo index.html esté en la carpeta de plantillas (templates)
+
+@csrf_exempt
+def wallet_info(request):
+    """
+    Endpoint para obtener saldo y NFTs de una wallet Phantom.
+    """
+    if request.method == "POST":
+        # Imprimir el cuerpo de la solicitud para depuración
+      
+
+        try:
+            # Deserializar el JSON recibido en el cuerpo de la solicitud
+            data = json.loads(request.body)
+           
+            # Verificar que la dirección de la wallet esté presentes
+            wallet_address = data.get("wallet_address")
+            if not wallet_address:
+                return JsonResponse({"error": "Wallet address is required"}, status=400)
+
+            # Obtener saldo y s
+            print("siiiii:",wallet_address)
+            balance = get_balance(wallet_address)
+            sol_balance = balance / 1_000_000_000  # convierte de lamports a SOL
+            print("Request body:", sol_balance)
+            nfts = get_nfts(wallet_address)
+           
+            return JsonResponse({"balance": sol_balance, "nfts": nfts})
+
+        except json.JSONDecodeError as e:
+            return JsonResponse({"error": f"Invalid JSON format: {str(e)}"}, status=400)
+        except Exception as e:
+            return JsonResponse({"error": f"Internal Server Error: {str(e)}"}, status=500)
+
+    return JsonResponse({"error": "Invalid request method. Use POST."}, status=405)

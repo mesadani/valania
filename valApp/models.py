@@ -74,7 +74,7 @@ class Rarities(models.Model):
 class HeroeTypes(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField() 
-    
+
     def __str__(self):
         return self.name 
     
@@ -84,6 +84,13 @@ class HeroeRoles(models.Model):
     
     def __str__(self):
         return self.name     
+
+class HeroeRoles(models.Model):
+    name = models.CharField(max_length=200)
+    description = models.TextField()
+
+    def __str__(self):
+        return self.name
 
 class Heroes(models.Model):
     name = models.CharField(max_length=200)
@@ -125,3 +132,4 @@ class CombatUnits(models.Model):
 
     def __str__(self):
         return self.name     
+    

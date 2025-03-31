@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conectar a Phantom Wallet</title>
+</head>
+<body>
+  <h1>Conectar a Phantom Wallet</h1>
+  <button id="connectButton">Conectar Phantom</button>
+  
+  <div id="walletInfo" style="display:none;">
+    <p><strong>Saldo:</strong> <span id="balance"></span></p>
+    <p><strong>NFTs:</strong></p>
+    <ul id="nftList"></ul>
+  </div>
+
+  <script>
+    document.getElementById('connectButton').addEventListener('click', async () => {
+      if (window.solana && window.solana.isPhantom) {
+        try {
+          // Conectar con la wallet Phantom
+          const response = await window.solana.connect();
+          const walletAddress = response.publicKey.toString();
+
+          // Enviar la dirección al backend para obtener el saldo y los NFTs
+          const responseBackend = await fetch('/solana/wallet_info/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ wallet_address: walletAddress }),
+          });
+
+          const data = await responseBackend.json();
+
+          // Mostrar el saldo y los NFTs
+          if (data.balance !== undefined) {
+            document.getElementById('walletInfo').style.display = 'block';
+            document.getElementById('balance').textContent = data.balance;
+            
+            const nftList = document.getElementById('nftList');
+            nftList.innerHTML = ''; // Limpiar lista de NFTs
+            data.nfts.forEach(nft => {
+              const listItem = document.createElement('li');
+              listItem.textContent = nft.name || "NFT sin nombre";
+              nftList.appendChild(listItem);
+            });
+          } else {
+            console.error('Error al obtener los datos de la wallet:', data.error);
+          }
+
+        } catch (error) {
+          console.error('Error al conectar con Phantom:', error);
+        }
+      } else {
+        alert('Por favor, instala la wallet Phantom en tu navegador.');
+      }
+    });
+  </script>
+</body>
+</html>

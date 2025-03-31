@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f9;
+        }
+        #chatbox {
+            width: 400px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        #messages {
+            height: 300px;
+            overflow-y: auto;
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+        .message {
+            margin: 5px 0;
+        }
+        .user {
+            text-align: right;
+            color: blue;
+        }
+        .bot {
+            text-align: left;
+            color: green;
+        }
+        #input {
+            display: flex;
+        }
+        #input input {
+            flex: 1;
+            padding: 5px;
+        }
+        #input button {
+            padding: 5px 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="chatbox">
+        <div id="messages"></div>
+        <div id="input">
+            <input type="text" id="userInput" placeholder="Escribe un mensaje...">
+            <button onclick="sendMessage()">Enviar</button>
+        </div>
+    </div>
+
+    <script>
+        function sendMessage() {
+            const userInput = document.getElementById('userInput');
+            const message = userInput.value;
+            if (message.trim() === '') return;
+
+            // Mostrar el mensaje del usuario
+            const messagesDiv = document.getElementById('messages');
+            const userMessageDiv = document.createElement('div');
+            userMessageDiv.className = 'message user';
+            userMessageDiv.textContent = message;
+            messagesDiv.appendChild(userMessageDiv);
+
+            // Limpiar el input
+            userInput.value = '';
+
+            // Llamar a la API del chatbot
+            fetch(`/chatbot/api/?message=${encodeURIComponent(message)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const botMessageDiv = document.createElement('div');
+                    botMessageDiv.className = 'message bot';
+                    botMessageDiv.textContent = data.response;
+                    messagesDiv.appendChild(botMessageDiv);
+
+                    // Desplazar hacia abajo
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>
