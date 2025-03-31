@@ -31,7 +31,7 @@ SECRET_KEY = 'django-insecure-9*=e2zikxfbi_=@&=een=awwz0t9-*-djrqug%g$z#(%hmink7
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["valania.onrender.com","valania-production.up.railway.app"]
+ALLOWED_HOSTS = ["*"]
 
 CSRF_TRUSTED_ORIGINS = [
     'https://valania-production.up.railway.app',
