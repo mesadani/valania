@@ -14,5 +14,5 @@ pydantic
 pydantic_core
 torch
 torchvision
-sklearn
+scikit-learn
 solders
