@@ -8,7 +8,7 @@ gunicorn
 whitenoise
 cloudinary==1.43.0
 django-cloudinary-storage==0.3.0
-solana-py==0.6.9
+solana
 pandas
 pydantic
 pydantic_core
