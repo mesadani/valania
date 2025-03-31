@@ -17,46 +17,62 @@
 
   <script>
     document.getElementById('connectButton').addEventListener('click', async () => {
-      if (window.solana && window.solana.isPhantom) {
-        try {
-          // Conectar con la wallet Phantom
-          const response = await window.solana.connect();
-          const walletAddress = response.publicKey.toString();
+  if (window.solana && window.solana.isPhantom) {
+    try {
+      // Conectar con la wallet Phantom
+      const response = await window.solana.connect();
+      const walletAddress = response.publicKey.toString();
 
-          // Enviar la dirección al backend para obtener el saldo y los NFTs
-          const responseBackend = await fetch('/solana/wallet_info/', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ wallet_address: walletAddress }),
-          });
+      // Enviar la dirección al backend para obtener el saldo y los NFTs
+      const responseBackend = await fetch('/solana/wallet_info/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ wallet_address: walletAddress }),
+      });
 
-          const data = await responseBackend.json();
+      const data = await responseBackend.json();
 
-          // Mostrar el saldo y los NFTs
-          if (data.balance !== undefined) {
-            document.getElementById('walletInfo').style.display = 'block';
-            document.getElementById('balance').textContent = data.balance;
-            
-            const nftList = document.getElementById('nftList');
-            nftList.innerHTML = ''; // Limpiar lista de NFTs
-            data.nfts.forEach(nft => {
-              const listItem = document.createElement('li');
-              listItem.textContent = nft.name || "NFT sin nombre";
-              nftList.appendChild(listItem);
-            });
-          } else {
-            console.error('Error al obtener los datos de la wallet:', data.error);
+      // Mostrar el saldo y los NFTs
+      if (data.balance !== undefined) {
+        document.getElementById('walletInfo').style.display = 'block';
+        document.getElementById('balance').textContent = data.balance;
+        
+        const nftList = document.getElementById('nftList');
+        nftList.innerHTML = ''; // Limpiar lista de NFTs
+
+        data.nfts.forEach(nft => {
+          const listItem = document.createElement('li');
+
+          // Crear imagen si hay URL disponible
+          if (nft.image) {
+            const img = document.createElement('img');
+            img.src = nft.image;
+            img.alt = nft.name || "NFT";
+            img.style.width = "50px";  // Ajusta el tamaño según necesites
+            img.style.height = "50px";
+            img.style.marginRight = "10px";
+            listItem.appendChild(img);
           }
 
-        } catch (error) {
-          console.error('Error al conectar con Phantom:', error);
-        }
+          // Agregar el nombre del NFT
+          const textNode = document.createTextNode(nft.name + " ( " + nft.amount + " ) " || "NFT sin nombre");
+          listItem.appendChild(textNode);
+
+          nftList.appendChild(listItem);
+        });
       } else {
-        alert('Por favor, instala la wallet Phantom en tu navegador.');
+        console.error('Error al obtener los datos de la wallet:', data.error);
       }
-    });
-  </script>
+
+    } catch (error) {
+      console.error('Error al conectar con Phantom:', error);
+    }
+  } else {
+    alert('Por favor, instala la wallet Phantom en tu navegador.');
+  }
+});
+</script>
 </body>
 </html>

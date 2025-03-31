@@ -2,7 +2,7 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .service.phantom_wallet import get_balance, get_nfts
+from .service.phantom_wallet import get_balance, get_nfts, extract_nft_info
 import json
 
 # Vista que renderiza el HTML donde el frontend puede interactuar con Phantom
@@ -28,13 +28,14 @@ def wallet_info(request):
                 return JsonResponse({"error": "Wallet address is required"}, status=400)
 
             # Obtener saldo y s
-            print("siiiii:",wallet_address)
+     
             balance = get_balance(wallet_address)
             sol_balance = balance / 1_000_000_000  # convierte de lamports a SOL
-            print("Request body:", sol_balance)
+       
             nfts = get_nfts(wallet_address)
            
-            return JsonResponse({"balance": sol_balance, "nfts": nfts})
+            data = extract_nft_info({"nfts": nfts})
+            return JsonResponse({"balance": sol_balance, "nfts": data, "data": data})
 
         except json.JSONDecodeError as e:
             return JsonResponse({"error": f"Invalid JSON format: {str(e)}"}, status=400)

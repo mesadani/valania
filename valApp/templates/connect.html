@@ -49,7 +49,20 @@
         nftList.innerHTML = '';
         data.nfts.forEach(nft => {
           const listItem = document.createElement('li');
-          listItem.textContent = nft.name || "NFT sin nombre";
+          // Crear imagen si hay URL disponible
+          if (nft.image) {
+            const img = document.createElement('img');
+            img.src = nft.image;
+            img.alt = nft.name || "NFT";
+            img.style.width = "50px";  // Ajusta el tamaño según necesites
+            img.style.height = "50px";
+            img.style.marginRight = "10px";
+            listItem.appendChild(img);
+          }
+
+          // Agregar el nombre del NFT
+          const textNode = document.createTextNode(nft.name + " ( " + nft.amount + " ) " || "NFT sin nombre");
+          listItem.appendChild(textNode);
           nftList.appendChild(listItem);
         });
       } else {
