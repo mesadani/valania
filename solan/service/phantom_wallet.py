@@ -4,7 +4,7 @@ import base64
 import requests
 from solana.rpc.api import Client  # Este es el cliente para interactuar con Solana
 from solders.pubkey import Pubkey
-
+from valApp.models import Objects
 
 SOLANA_API_URL = "https://api.mainnet-beta.solana.com"
 client = Client(SOLANA_API_URL)
@@ -126,17 +126,20 @@ def extract_nft_info(nft_data):
 
             if "valannia" in uri.lower():
                 metadata = obtener_json_desde_uri(uri)  # Obtener datos del JSON
+                if amount > 0:
+                    nombreBd = Objects.objects.filter(name=metadata['name']).first()
+                    if nombreBd:
+                        nombreBd.mint = uri
+                        nombreBd.save()              
 
-               
-
-                nft_list.append({
-                    "mint": mint,
-                    "amount": amount,
-                    "decimals": decimals,
-                    "name": metadata['name'],
-                    "image": metadata['image'],
-                    "metadata" : metadata
-                })
+                    nft_list.append({
+                        "mint": mint,
+                        "amount": amount,
+                        "decimals": decimals,
+                        "name": metadata['name'],
+                        "image": metadata['image'],
+                        "metadata" : metadata
+                    })
         except KeyError:
             continue  # Si falta alguna clave, simplemente lo ignora
 
