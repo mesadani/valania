@@ -127,6 +127,8 @@ def extract_nft_info(nft_data):
             if "valannia" in uri.lower():
                 metadata = obtener_json_desde_uri(uri)  # Obtener datos del JSON
 
+               
+
                 nft_list.append({
                     "mint": mint,
                     "amount": amount,
