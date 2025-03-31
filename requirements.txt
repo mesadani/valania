@@ -12,3 +12,5 @@ solana
 pandas
 pydantic
 pydantic_core
+torch
+torchvision
