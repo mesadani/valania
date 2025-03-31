@@ -2,7 +2,6 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse,JsonResponse
 # Create your views here.
 from .models import Professions, Heroes, Races, Crafting, craftingRequirements
-
 def index(request):
     title = 'Welcome to the Jungle !'
     professions = Professions.objects.all();
@@ -80,3 +79,4 @@ def profession_detail(request, profession_id):
     }
     
     return JsonResponse(response_data)
+
