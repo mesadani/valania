@@ -22,7 +22,7 @@ class CraftingAdmin(admin.ModelAdmin):
 
 @admin.register(Objects)
 class ObjectsAdmin(admin.ModelAdmin):
-    list_display = ('name', 'objectType', 'objectCategory', image_tag)
+    list_display = ('id','name', 'objectType', 'objectCategory', image_tag)
 
 @admin.register(Professions)
 class ProfessionsAdmin(admin.ModelAdmin):
