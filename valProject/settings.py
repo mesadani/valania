@@ -51,7 +51,6 @@ INSTALLED_APPS = [
     'cloudinary',
     'cloudinary_storage',    
     'solana',
-    'chat'
 ]
 
 MIDDLEWARE = [
@@ -107,8 +106,8 @@ DATABASES = {
         'NAME': 'railway',
         'USER': 'root',
         'PASSWORD': 'LgRkCRJstseaSJLfMZwSPSEcHlkBLekE',
-        'HOST': 'shortline.proxy.rlwy.net',  # O la IP del servidor MySQL
-        'PORT': '51434',  # Puerto por defecto de MySQL
+        'HOST': 'mysql.railway.internal',  # O la IP del servidor MySQL
+        'PORT': '3306',  # Puerto por defecto de MySQL
         'OPTIONS': {
             'charset': 'utf8mb4',  # Soporte para emojis y caracteres especiales
         },
