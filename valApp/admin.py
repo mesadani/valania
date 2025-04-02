@@ -43,6 +43,11 @@ class HeroesAdmin(admin.ModelAdmin):
 @admin.register(CombatUnits)
 class CombatUnitsAdmin(admin.ModelAdmin):
     list_display = ('name', image_tag)
+    list_filter = ('race',)
+
+    def race_name(self, obj):
+        return obj.race.name
+    race_name.short_description = 'Race'
 
 # Registro de modelos sin personalización
 admin.site.register(ObjectTypes)
