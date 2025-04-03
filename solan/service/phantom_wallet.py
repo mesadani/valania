@@ -129,7 +129,8 @@ def extract_nft_info(nft_data):
                 if amount != '0':
                     nombreBd = Objects.objects.filter(name=metadata['name']).first()
                     if nombreBd:
-                        nombreBd.mint = uri
+                        nombreBd.mint = mint
+                        nombreBd.uri = uri
                         nombreBd.save()              
 
                     nft_list.append({

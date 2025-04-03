@@ -30,7 +30,7 @@ class Objects(models.Model):
     objectCategory = models.ForeignKey(ObjectCategorys, on_delete=models.CASCADE)
     image = CloudinaryField('image', folder='objects')
     mint = models.CharField(max_length=200)
-
+    uri = models.CharField(max_length=200)
     def __str__(self):
         return self.name
     
