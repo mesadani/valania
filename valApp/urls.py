@@ -6,5 +6,9 @@ urlpatterns = [
     path('professions',  views.professions , name='professions'),
     path('heroes',  views.heroes , name='heroes'),
     path('professions/<int:profession_id>/', views.profession_detail, name='profession_detail'),
+    #path('nft_detail/<str:nft_type>/<int:nft_id>/', views.nft_detail, name='nft_detail'),
+    path('buscador_objeto/', views.buscador_objeto, name='buscador_objeto'),
+    path('search', views.search, name='search'),
+    path('inventory', views.inventory, name='inventory'),
 
 ]

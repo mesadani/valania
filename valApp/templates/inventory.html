@@ -1,0 +1,291 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div id="loading-overlay" style="display: none;">
+    <div id="loading-spinner"></div>
+</div>
+
+<h1 class="title">Conectar a Phantom Wallet</h1>
+<button id="connectButton" class="connect-btn" onclick="connectPhantomWallet()">Conectar Wallet</button>
+<span id="connectedStatus" class="status-message" style="display:none;">Conectado</span>
+<!-- Wallet Info (hidden initially) -->
+<div id="walletInfo" class="info-box" style="display:none;">
+  <h2>Información de la Wallet</h2>
+  <p><strong>Saldo:</strong> <span id="balance" class="balance"></span></p>
+  <p><strong>NFTs:</strong></p>
+  <div id="nftList" class="nft-container"></div>
+</div>
+
+<!-- NFT Details (hidden initially) -->
+<div id="nftDetails" class="details-box" style="display:none;">
+  <h2>Detalles del NFT</h2>
+  <table class="nft-details-table">
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Estado</th>
+        <th>Memo</th>
+        <th>Firma</th>
+        <th>Slot</th>
+      </tr>
+    </thead>
+    <tbody id="nftDetailsBody"></tbody>
+  </table>
+</div>
+
+
+
+<style>
+    /* Spinner de carga */
+    #loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    #loading-spinner {
+        border: 10px solid #f3f3f3;
+        border-top: 10px solid #ffb800;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Estilos para los títulos */
+    .title {
+        font-family: 'Arial', sans-serif;
+        font-size: 32px;
+        color: #fff;
+        margin-bottom: 20px;
+        text-align: center;
+        text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Caja de información */
+    .info-box, .details-box {
+        background-color: #2c3e50;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        margin-bottom: 20px;
+    }
+
+    .info-box h2, .details-box h2 {
+        font-size: 24px;
+        color: #ecf0f1;
+        margin-bottom: 15px;
+    }
+
+    /* Estilo para los balances */
+    .balance {
+        font-weight: bold;
+        color: #ffcc00;
+    }
+
+    /* Contenedor de los NFTs (Bloques) */
+    .nft-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-around;
+        gap: 15px;
+    }
+
+    /* Estilo para cada bloque de NFT */
+    .nft-card {
+        background-color: #34495e;
+        padding: 20px;
+        border-radius: 10px;
+        width: 200px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        transition: transform 0.3s ease, background-color 0.3s ease;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .nft-card:hover {
+        background-color: #1abc9c;
+        transform: translateY(-10px);
+    }
+
+    .nft-card img {
+        width: 100px;
+        height: 100px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+
+    .nft-card span {
+        color: #ecf0f1;
+        font-size: 16px;
+        font-weight: bold;
+        margin-top: 10px; /* Espacio entre la imagen y el nombre */
+    }
+
+    /* Estilo para la tabla de detalles del NFT */
+    .nft-details-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    .nft-details-table th, .nft-details-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+        color: #fff;
+    }
+
+    .nft-details-table th {
+        background-color: #2c3e50;
+    }
+
+    .nft-details-table td a {
+        color: #1abc9c;
+        text-decoration: none;
+    }
+
+    .nft-details-table td a:hover {
+        text-decoration: underline;
+    }
+
+    /* Estilo para el botón de conectar */
+    .connect-btn {
+        background-color: #ffb800;
+        color: white;
+        padding: 15px 30px;
+        border: none;
+        border-radius: 50px;
+        font-size: 18px;
+        cursor: pointer;
+        display: block;
+        margin: 20px auto;
+        transition: all 0.3s ease;
+    }
+
+    .connect-btn:hover {
+        background-color: #ff9800;
+    }
+
+    /* Estilo para el estado de conexión */
+    .status-message {
+         background-color: #ffb800;
+        color: white;
+        padding: 15px 30px;
+        border: none;
+        border-radius: 50px;
+        font-size: 18px;
+        cursor: pointer;
+        display: block;
+        margin: 20px auto;
+        transition: all 0.3s ease;
+    }
+</style>
+
+<script>
+  async function checkPhantomConnection() {
+    if (window.solana && window.solana.isPhantom) {
+      try {
+        document.getElementById('loading-overlay').style.display = 'flex';
+        
+        const response = await window.solana.connect();
+        const walletAddress = response.publicKey.toString();
+        console.log("Wallet Address:", walletAddress);
+
+        if (walletAddress) {
+          document.getElementById('connectButton').style.display = 'none';
+          document.getElementById('connectedStatus').style.display = 'inline';
+
+          const responseBackend = await fetch('/solana/wallet_info/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ wallet_address: walletAddress })
+          });
+
+          const data = await responseBackend.json();
+
+          if (data.balance !== undefined) {
+            document.getElementById('walletInfo').style.display = 'block';
+            document.getElementById('balance').textContent = data.balance;
+
+            const nftContainer = document.getElementById('nftList');
+            nftContainer.innerHTML = '';
+
+            data.nfts.forEach(nft => {
+              const card = document.createElement('div');
+              card.classList.add('nft-card');
+              card.addEventListener('click', async () => {
+                try {
+                  console.log(`NFT clicado: ${nft.name}`);
+                  const responseAction = await fetch('/solana/nftInfo/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mintAddress: nft.mint })
+                  });
+
+                  const result = await responseAction.json();
+                  showNFTDetails(result);
+                } catch (error) {
+                  console.error('Error en la acción del NFT:', error);
+                }
+              });
+
+              if (nft.image) {
+                const img = document.createElement('img');
+                img.src = nft.image;
+                img.alt = nft.name || "NFT";
+                card.appendChild(img);
+              }
+
+              const textNode = document.createTextNode(nft.name + " ( " + nft.amount + " ) " || "NFT sin nombre");
+              const span = document.createElement('span');
+              span.appendChild(textNode);
+              card.appendChild(span);
+
+              nftContainer.appendChild(card);
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error al conectar con Phantom:', error);
+      } finally {
+        document.getElementById('loading-overlay').style.display = 'none';
+      }
+    }
+  }
+
+  async function connectPhantomWallet() {
+    if (window.solana && window.solana.isPhantom) {
+      try {
+        document.getElementById('loading-overlay').style.display = 'flex';
+        
+        const response = await window.solana.connect();
+        console.log("Wallet Address:", response.publicKey.toString());
+        checkPhantomConnection();
+      } catch (error) {
+        console.error('Error al conectar a Phantom Wallet:', error);
+      } finally {
+        document.getElementById('loading-overlay').style.display = 'none';
+      }
+    }
+  }
+
+  window.addEventListener('load', checkPhantomConnection);
+</script>
+
+{% endblock %}

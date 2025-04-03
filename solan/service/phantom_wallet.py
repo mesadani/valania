@@ -111,6 +111,57 @@ def get_nfts(wallet_address):
     else:
         raise Exception("Error al consultar el saldo de la wallet")
 
+
+def get_nft_supply(mint):
+    """
+    Función para obtener el saldo de una wallet en la blockchain de Solana.
+    """
+    headers = {
+        "Content-Type": "application/json",
+    }
+
+    # JSON para la solicitud RPC
+    payload = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "getTokenSupply",
+        "params": [mint],
+    }
+
+    response = requests.post(SOLANA_API_URL, json=payload, headers=headers)
+
+    if response.status_code == 200:
+        result = response.json()
+        return result.get('result', {}).get('value', 0)
+    else:
+        raise Exception("Error al consultar el saldo de la wallet")
+    
+
+def get_nft_transactions(mint,limit):
+    """
+    Función para obtener el saldo de una wallet en la blockchain de Solana.
+    """
+    headers = {
+        "Content-Type": "application/json",
+    }
+
+    # JSON para la solicitud RPC
+    payload = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "getSignaturesForAddress",
+        "params": [mint,{"limit": limit}],
+    }
+
+    response = requests.post(SOLANA_API_URL, json=payload, headers=headers)
+    
+    if response.status_code == 200:
+
+        result = response.json()
+        return result.get('result', {})
+    else:
+        raise Exception("Error al consultar trasnsacciones")
+
 def extract_nft_info(nft_data):
     nft_list = []
 

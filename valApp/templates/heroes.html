@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
 
 {% block content %}
+
+<!-- Filtro de razas -->
 <div class="races-menu">
     {% for race in races %}
     <div class="race-item" onclick="filterByRace('{{ race.id }}')">
@@ -10,65 +12,136 @@
     {% endfor %}
 </div>
 
+<!-- Contenedor de Héroes -->
 <div class="heroes-container">
     {% for heroe in heroes %}
-    <div class="hero-card" data-race-id="{{ heroe.race.id }}" onclick="toggleCard(this)">
-        <img src="{{ heroe.image.url }}" alt="{{ heroe.name }}" class="hero-image">
+    <div class="hero-card" data-race-id="{{ heroe.race.id }}">
+        <div class="hero-image-container">
+            <img src="{{ heroe.image.url }}" alt="{{ heroe.name }}" class="hero-image">
+        </div>
         <div class="hero-info">
             <h2>{{ heroe.name }}</h2>
-            <div class="hero-details">
-                <p><strong>Type:</strong> {{ heroe.type.name }}</p>
-                <p><strong>Race:</strong> {{ heroe.race.name }}</p>
-                <p><strong>Supply:</strong> {{ heroe.supply }}</p>
-                <p><strong>Rarity:</strong> {{ heroe.rarity.name }}</p>
-                <p><strong>Price:</strong> {{ heroe.price }}</p>
-                <p><strong>Location:</strong> {{ heroe.location }}</p>
-                <p>{{ heroe.description }}</p>
-            </div>
+            <p><strong>Tipo:</strong> {{ heroe.type.name }}</p>
+            <p><strong>Raza:</strong> {{ heroe.race.name }}</p>
+            <p><strong>Suministro:</strong> {{ heroe.supply }}</p>
+            <p><strong>Rareza:</strong> {{ heroe.rarity.name }}</p>
+            <p><strong>Precio:</strong> {{ heroe.price }}</p>
+            <p><strong>Ubicación:</strong> {{ heroe.location }}</p>
+            <p>{{ heroe.description }}</p>
         </div>
     </div>
     {% endfor %}
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-    $(document).ready(function() {
-        $('.profession-button').click(function() {
-            var professionId = $(this).data('id');
-            
-            $.ajax({
-                url: '/professions/' + professionId + '/',
-                method: 'GET',
-                dataType: 'json',
-                success: function(data) {
-                    var html = '<h1>' + data.profession_name + '</h1>';
-                    html += '<p>' + data.profession_description + '</p>';
-                    html += '<h2>Objetos por Nivel</h2><ul>';
-                    
-                    data.crafting_details.forEach(function(detail) {
-                        html += '<li><strong>Nivel ' + detail.level + ':</strong> ' + detail.crafting_name;
-                        html += '<ul>';
-                        html += '<li>Cantidad: ' + detail.quantity + '</li>';
-                        html += '<li>Probabilidad: ' + detail.probability + '</li>';
-                        html += '<li>Tiempo: ' + detail.time + '</li>';
-                        html += '<li>Requisitos:<ul>';
-                        
-                        detail.requirements.forEach(function(req) {
-                            html += '<li>' + req.name + ' - Cantidad: ' + req.quantity + '</li>';
-                        });
-                        
-                        html += '</ul></li></ul></li>';
-                    });
-                    
-                    html += '</ul>';
-                    
-                    $('#profession-details').html(html);
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error al cargar los detalles de la profesión:', error);
-                }
-            });
-        });
-    });
-    </script>
-    
 </div>
+
+<!-- Script de Filtro -->
+<script>
+    function filterByRace(raceId) {
+        const heroCards = document.querySelectorAll('.hero-card');
+        heroCards.forEach(card => {
+            if (card.getAttribute('data-race-id') === raceId || raceId === 'all') {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+</script>
+
+<!-- Estilos Mejorados -->
+<style>
+    .races-menu {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .race-item {
+        cursor: pointer;
+        text-align: center;
+        padding: 10px;
+        border-radius: 10px;
+        background: #34495e;
+        transition: background 0.3s;
+    }
+
+    .race-item:hover {
+        background: #1abc9c;
+    }
+
+    .race-image {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+    .heroes-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: center;
+    }
+    .heroes-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+}
+
+.hero-card {
+    display: flex;
+    align-items: center; /* Alinea la imagen con la información */
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+    width: 500px; /* Aumentado para más espacio */
+    min-height: 200px; /* Asegura altura mínima */
+    transition: transform 0.3s;
+}
+
+.hero-card:hover {
+    transform: scale(1.02);
+}
+
+.hero-image-container {
+    width: 40%; /* Ocupa el 40% del ancho */
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1); /* Fondo sutil */
+}
+
+.hero-image {
+    width: 100%;
+    height: 356px;
+    object-fit: cover;
+    border-right: 2px solid gold; /* Separador visual */
+}
+
+.hero-info {
+    width: 60%; /* Ocupa el 60% restante */
+    padding: 15px;
+    color: #ddd;
+    text-align: left;
+}
+
+.hero-info h2 {
+    color: #f1c40f;
+    margin-bottom: 10px;
+}
+
+.hero-info p {
+    margin: 5px 0;
+    font-size: 14px;
+    word-wrap: break-word;
+}
+
+
+
+</style>
+
 {% endblock %}

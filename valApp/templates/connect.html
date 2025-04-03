@@ -14,68 +14,148 @@
     <ul id="nftList"></ul>
   </div>
 
+  <!-- Tabla para mostrar la información del NFT -->
+  <div id="nftDetails" style="display:none;">
+    <h2>Detalles del NFT</h2>
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Estado</th>
+          <th>Memo</th>
+          <th>Firma</th>
+          <th>Slot</th>
+        </tr>
+      </thead>
+      <tbody id="nftDetailsBody"></tbody>
+    </table>
+  </div>
+
   <script>
     // Función para verificar si la wallet Phantom está conectada
     async function checkPhantomConnection() {
-  if (window.solana && window.solana.isPhantom) {
-    try {
-      // Conectar a la wallet Phantom
-      const response = await window.solana.connect();
+      if (window.solana && window.solana.isPhantom) {
+        try {
+          // Conectar a la wallet Phantom
+          const response = await window.solana.connect();
+          const walletAddress = response.publicKey.toString();
+          console.log("Wallet Address:", walletAddress);
 
-      // Verificar si la dirección de la wallet se ha obtenido correctamente
-      const walletAddress = response.publicKey.toString();
-      console.log("Wallet Address:", walletAddress);  // Verifica la dirección en la consola
+          if (!walletAddress) throw new Error("No wallet address found");
 
-      if (!walletAddress) {
-        throw new Error("No wallet address found");
+          // Llamar al backend para obtener el saldo y los NFTs
+          const responseBackend = await fetch('/solana/wallet_info/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ wallet_address: walletAddress })
+          });
+
+          const data = await responseBackend.json();
+
+          if (data.balance !== undefined) {
+            document.getElementById('walletInfo').style.display = 'block';
+            document.getElementById('balance').textContent = data.balance;
+
+            const nftList = document.getElementById('nftList');
+            nftList.innerHTML = '';
+
+            data.nfts.forEach(nft => {
+              const listItem = document.createElement('li');
+
+              // Imagen del NFT (si existe)
+              if (nft.image) {
+                const img = document.createElement('img');
+                img.src = nft.image;
+                img.alt = nft.name || "NFT";
+                img.style.width = "50px";
+                img.style.height = "50px";
+                img.style.marginRight = "10px";
+                listItem.appendChild(img);
+              }
+
+              // Nombre del NFT
+              const textNode = document.createTextNode(nft.name + " ( " + nft.amount + " ) " || "NFT sin nombre");
+              listItem.appendChild(textNode);
+
+              // Agregar evento para obtener detalles
+              listItem.addEventListener('click', async () => {
+                try {
+                  console.log(`NFT clicado: ${nft.name}`);
+
+                  const responseAction = await fetch('/solana/nftInfo/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mintAddress: nft.mint })
+                  });
+
+                  const result = await responseAction.json();
+                  showNFTDetails(result); // Mostrar los datos en la tabla
+
+                } catch (error) {
+                  console.error('Error en la acción del NFT:', error);
+                }
+              });
+
+              nftList.appendChild(listItem);
+            });
+          } else {
+            console.error('Error al obtener los datos de la wallet:', data.error);
+          }
+        } catch (error) {
+          console.error('Error al conectar con Phantom:', error);
+        }
+      } else {
+        console.log('Phantom Wallet no está conectado');
+      }
+    }
+
+    function showNFTDetails(data) {
+      const detailsTable = document.getElementById("nftDetails");
+      const detailsBody = document.getElementById("nftDetailsBody");
+
+      // Limpiar tabla antes de agregar nuevos datos
+      detailsBody.innerHTML = "";
+
+      if (!data.balance || data.balance.length === 0) {
+        console.log("No hay transacciones disponibles.");
+        return;
       }
 
-      // Llamar al backend para obtener el saldo y los NFTs
-      const responseBackend = await fetch('/solana/wallet_info/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ wallet_address: walletAddress }),  // Enviar como JSON
+      data.balance.forEach(transfer => {
+        const row = document.createElement("tr");
+
+        // Convertir blockTime a fecha legible
+        const date = new Date(transfer.blockTime * 1000).toLocaleString();
+
+        const cellDate = document.createElement("td");
+        cellDate.textContent = date;
+
+        const cellStatus = document.createElement("td");
+        cellStatus.textContent = transfer.confirmationStatus;
+
+        const cellMemo = document.createElement("td");
+        cellMemo.textContent = transfer.memo ? transfer.memo : "Sin memo";
+
+        const cellSignature = document.createElement("td");
+        const link = document.createElement("a");
+        link.href = `https://solscan.io/tx/${transfer.signature}`;
+        link.textContent = "Ver en Solscan";
+        link.target = "_blank"; // Abrir en nueva pestaña
+        cellSignature.appendChild(link);
+
+        const cellSlot = document.createElement("td");
+        cellSlot.textContent = transfer.slot;
+
+        row.appendChild(cellDate);
+        row.appendChild(cellStatus);
+        row.appendChild(cellMemo);
+        row.appendChild(cellSignature);
+        row.appendChild(cellSlot);
+        detailsBody.appendChild(row);
       });
 
-      const data = await responseBackend.json();
-
-      if (data.balance !== undefined) {
-        document.getElementById('walletInfo').style.display = 'block';
-        document.getElementById('balance').textContent = data.balance;
-
-        const nftList = document.getElementById('nftList');
-        nftList.innerHTML = '';
-        data.nfts.forEach(nft => {
-          const listItem = document.createElement('li');
-          // Crear imagen si hay URL disponible
-          if (nft.image) {
-            const img = document.createElement('img');
-            img.src = nft.image;
-            img.alt = nft.name || "NFT";
-            img.style.width = "50px";  // Ajusta el tamaño según necesites
-            img.style.height = "50px";
-            img.style.marginRight = "10px";
-            listItem.appendChild(img);
-          }
-
-          // Agregar el nombre del NFT
-          const textNode = document.createTextNode(nft.name + " ( " + nft.amount + " ) " || "NFT sin nombre");
-          listItem.appendChild(textNode);
-          nftList.appendChild(listItem);
-        });
-      } else {
-        console.error('Error al obtener los datos de la wallet:', data.error);
-      }
-    } catch (error) {
-      console.error('Error al conectar con Phantom:', error);
+      detailsTable.style.display = "block"; // Mostrar la tabla
     }
-  } else {
-    console.log('Phantom Wallet no está conectado');
-  }
-}
-
 
     // Llamamos a la función para verificar la conexión al cargar la página
     window.addEventListener('load', checkPhantomConnection);

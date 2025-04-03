@@ -1,0 +1,326 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div id="loading-overlay">
+    <div id="loading-spinner"></div>
+</div>
+<!-- Buscador de objetos -->
+<div class="search-container">
+    <input type="text" id="search-input" placeholder="Buscar objeto...">
+    <button onclick="searchObject()">🔍 Buscar</button>
+</div>
+
+<!-- Contenedor de Detalles del Objeto -->
+<div class="rpg-container">
+    <h1 class="title">Detalles del Objeto</h1>
+
+    <!-- Información del Objeto (Fija) -->
+    <div class="info-section">
+        <h2>Información del Objeto</h2>
+        <img src="" id="object-image" class="object-image" alt="">
+        <p><strong>Nombre:</strong> <span id="crafting_name"></span></p>
+        <p><strong>Nivel:</strong> <span id="level"></span></p>
+        <p><strong>Cantidad:</strong> <span id="quantity"></span></p>
+        <p><strong>Probabilidad:</strong> <span id="probability"></span>%</p>
+        <p><strong>Tiempo de Creación:</strong> <span id="time"></span> segundos</p>
+    </div>
+
+    <!-- Contenedor de pestañas -->
+    <div class="tabs">
+        <button class="tab-button active" onclick="openTab(event, 'requirements')">⚒ Requisitos</button>
+        <button class="tab-button" onclick="openTab(event, 'extra')">📜 Objetos para craftear:</button>
+        <button class="tab-button" onclick="openTab(event, 'transactions')">📜 Transacciones</button>
+    </div>
+
+    <!-- Contenido de pestañas -->
+    <div id="requirements" class="tab-content active">
+        <h2>Requisitos de Fabricación</h2>
+        <ul class="requirements-list" id="requirements-list">
+            <!-- Aquí se llenarán los requisitos con JavaScript -->
+        </ul>
+    </div>
+
+    <div id="extra" class="tab-content">
+        <h2>Se utiliza para craftear:</h2>
+        <ul class="requirements-list" id="craftingInverse-list">
+            <!-- Aquí se llenarán los objetos para craftear con JavaScript -->
+        </ul>
+    </div>
+
+    <div id="transactions" class="tab-content">
+        <h2>Transacciones</h2>
+        <table id="transactions-table">
+            <thead>
+                <tr>
+                    <th>Firma</th>
+                    <th>Hora del Bloque</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Aquí se llenarán las transacciones con JavaScript -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Estilos -->
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
+
+    #loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        display: none; /* Ocultar por defecto */
+        z-index: 9999; /* Asegura que cubra toda la pantalla */
+        justify-content: center;
+        align-items: center;
+    }
+
+    #loading-spinner {
+        border: 10px solid #f3f3f3;
+        border-top: 10px solid gold;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        animation: spin 1s linear infinite;
+    }
+
+    /* Animación del spinner */
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    /* Contenedor principal */
+    .rpg-container {
+        margin: 0 auto;
+        padding: 20px;
+        border-radius: 15px;
+        color: white;
+        font-family: 'MedievalSharp', cursive;
+        text-align: center;
+    }
+
+    /* Sección de Información Fija */
+    .info-section {
+        padding: 20px;
+        background: rgba(0, 0, 0, 0.8);
+        border-radius: 10px;
+        text-align: center;
+        border: 3px solid gold;
+        margin-bottom: 20px; /* Espacio entre la información fija y las pestañas */
+    }
+
+    /* Título */
+    .title {
+        font-size: 28px;
+        margin-bottom: 20px;
+        text-shadow: 2px 2px 5px gold;
+    }
+
+    /* Tabs */
+    .tabs {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .tab-button {
+        background: gold;
+        border: none;
+        padding: 12px 18px;
+        cursor: pointer;
+        font-size: 18px;
+        border-radius: 10px;
+        transition: 0.3s;
+        font-family: 'MedievalSharp', cursive;
+    }
+
+    .tab-button:hover, .tab-button.active {
+        background: #d4af37;
+        color: black;
+        box-shadow: 0px 0px 10px gold;
+    }
+
+    /* Contenido de Tabs */
+    .tab-content {
+        display: none;
+        padding: 20px;
+        background: rgba(0, 0, 0, 0.8);
+        border-radius: 10px;
+        text-align: left;
+        width: 100%;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    /* Imagenes */
+    .object-image {
+        width: 100%;
+        max-width: 200px;
+        border: 2px solid gold;
+        display: block;
+        margin: 10px auto;
+        border-radius: 10px;
+    }
+
+    .req-image {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        margin-right: 10px;
+    }
+
+    /* Listas */
+    .requirements-list {
+        list-style: none;
+        padding: 0;
+        text-align: left;
+    }
+
+    .requirements-list li {
+        display: flex;
+        align-items: center;
+        padding: 5px;
+        border-bottom: 1px solid gold;
+    }
+
+    /* Tabla */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    th, td {
+        border: 1px solid gold;
+        padding: 8px;
+        text-align: left;
+    }
+
+    th {
+        background-color: gold;
+        color: black;
+    }
+</style>
+
+<!-- Script de Tabs y Buscador -->
+<script>
+
+document.addEventListener('DOMContentLoaded', function () {
+        // Obtener parámetros de la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const objetoBuscado = urlParams.get('q'); // Obtener el parámetro 'q'
+
+        if (objetoBuscado) {
+            searchObject(objetoBuscado);
+        }
+    });
+    // Función para manejar las pestañas
+    function openTab(evt, tabName) {
+        var i, tabcontent, tabbuttons;
+        tabcontent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].classList.remove("active");
+        }
+        tabbuttons = document.getElementsByClassName("tab-button");
+        for (i = 0; i < tabbuttons.length; i++) {
+            tabbuttons[i].classList.remove("active");
+        }
+        document.getElementById(tabName).classList.add("active");
+        evt.currentTarget.classList.add("active");
+    }
+
+    // Función para realizar la búsqueda
+// Función para realizar la búsqueda
+    function searchObject(objectName) {
+        // Si no se pasa un nombre, buscamos por el valor del campo de entrada
+        let query = objectName || document.getElementById('search-input').value;
+
+        if (query.length < 3) return; // Evitar búsquedas con menos de 3 caracteres
+
+        // Mostrar el loading
+        document.getElementById('loading-overlay').style.display = 'flex';
+
+        fetch(`/buscador_objeto/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ q: query })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                actualizarPagina(data);
+            } else {
+                alert("Objeto no encontrado.");
+            }
+        })
+        .catch(error => console.error('Error en la búsqueda:', error))
+        .finally(() => {
+            // Ocultar el loading
+            document.getElementById('loading-overlay').style.display = 'none';
+        });
+    }
+
+
+    // Función para actualizar los datos de la página
+    function actualizarPagina(data) {
+        // Actualizar Información
+        document.getElementById("object-image").src = data.crafting_details_by_level[0].image;
+        document.getElementById("crafting_name").innerText = data.crafting_details_by_level[0].crafting_name;
+        document.getElementById("level").innerText = data.crafting_details_by_level[0].level;
+        document.getElementById("quantity").innerText = data.crafting_details_by_level[0].quantity;
+        document.getElementById("probability").innerText = data.crafting_details_by_level[0].probability;
+        document.getElementById("time").innerText = data.crafting_details_by_level[0].time;
+
+        // Actualizar Requisitos
+        let reqList = document.getElementById("requirements-list");
+        reqList.innerHTML = "";
+        data.crafting_details_by_level[0].requirements.forEach(req => {
+            reqList.innerHTML += `
+                <li>
+                    <img onclick="searchObject('${req.name}')" src="${req.image}" alt="" class="req-image"  style="cursor: pointer;">
+                    ⚒ ${req.name} - Cantidad: ${req.quantity}
+                </li>
+            `;
+        });
+
+        // Actualizar Objetos que se pueden craftear
+        let extraList = document.getElementById("craftingInverse-list");
+        extraList.innerHTML = "";
+        data.craftingInverse_details.forEach(req => {
+            extraList.innerHTML += `
+                <li>
+                    <img onclick="searchObject('${req.crafting_name}')" src="${req.image}" alt="" class="req-image"  style="cursor: pointer;">
+
+                    ${req.crafting_name} - Cantidad: ${req.quantity} - Profesión: ${req.profesion} - Nivel: ${req.level} - Tiempo: ${req.time}
+                </li>
+            `;
+        });
+
+        // Actualizar Transacciones
+        let transTable = document.getElementById("transactions-table").getElementsByTagName('tbody')[0];
+        transTable.innerHTML = "";
+        data.transactions.forEach(tx => {
+            transTable.innerHTML += `
+                <tr>
+                    <td>${tx.signature}</td>
+                    <td>${tx.blockTime}</td>
+                    <td>${tx.confirmationStatus}</td>
+                </tr>
+            `;
+        });
+    }
+</script>
+
+{% endblock %}

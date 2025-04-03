@@ -1,0 +1,300 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="rpg-container">
+
+    <div class="search-container">
+        <input type="text" id="search-input" placeholder="Buscar objeto..." onkeyup="searchObject()">
+        <button onclick="searchObject()">🔍 Buscar</button>
+    </div>
+    <h1 class="title">Detalles del Objeto</h1>
+
+    <!-- Información del Objeto (Fija) -->
+    <div class="info-section">
+        <h2>Información del Objeto</h2>
+        <img src="{{ crafting_details.0.image }}" alt="{{ crafting_details.0.crafting_name }}" class="object-image">
+        <p><strong>Nombre:</strong> {{ crafting_details.0.crafting_name }}</p>
+        <p><strong>Nivel:</strong> {{ crafting_details.0.level }}</p>
+        <p><strong>Cantidad:</strong> {{ crafting_details.0.quantity }}</p>
+        <p><strong>Probabilidad:</strong> {{ crafting_details.0.probability }}%</p>
+        <p><strong>Tiempo de Creación:</strong> {{ crafting_details.0.time }} segundos</p>
+    </div>
+
+    <!-- Contenedor de pestañas -->
+    <div class="tabs">
+        <button class="tab-button active" onclick="openTab(event, 'requirements')">⚒ Requisitos</button>
+        <button class="tab-button" onclick="openTab(event, 'extra')">📜 Objetos para craftear:</button>
+        <button class="tab-button" onclick="openTab(event, 'transactions')">📜 Transacciones</button>
+    </div>
+
+    <!-- Contenido de pestañas -->
+    <div id="requirements" class="tab-content active">
+        <h2>Requisitos de Fabricación</h2>
+        <ul class="requirements-list">
+            {% for req in crafting_details.0.requirements %}
+            <li>
+                <a href="/nft_detail/object/{{ req.id }}/" style="cursor: pointer;"> <img src="{{ req.image }}" alt="" class="req-image"></a>
+                ⚒ {{ req.name }} - Cantidad: {{ req.quantity }}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div id="extra" class="tab-content">
+        <h2>Se utiliza para craftear:</h2>
+        <ul class="requirements-list">
+            {% for req in craftingInverse_details %}
+            <li>
+                
+                <a href="/nft_detail/object/{{ req.id }}/" style="cursor: pointer;"> <img src="{{ req.image }}" alt="" class="req-image"></a>
+                {{ req.crafting_name }} - Cantidad: {{ req.quantity }}  - Profession: {{ req.profesion }}  - Lvl: {{ req.level }} - Time: {{ req.time }}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div id="transactions" class="tab-content">
+        <h2>Transacciones</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Firma</th>
+                    <th>Hora del Bloque</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaction in transactions %}
+                <tr>
+                    <td>{{ transaction.signature }}</td>
+                    <td>{{ transaction.blockTime }}</td>
+                    <td>{{ transaction.confirmationStatus }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Estilos -->
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
+
+    /* Contenedor principal */
+    .rpg-container {
+        margin: 0 auto;
+        padding: 20px;
+    
+        border-radius: 15px;
+       
+        color: white;
+        font-family: 'MedievalSharp', cursive;
+        text-align: center;
+    }
+
+    /* Sección de Información Fija */
+    .info-section {
+        padding: 20px;
+        background: rgba(0, 0, 0, 0.8);
+        border-radius: 10px;
+        text-align: center;
+        border: 3px solid gold;
+        margin-bottom: 20px; /* Espacio entre la información fija y las pestañas */
+    }
+
+    /* Título */
+    .title {
+        font-size: 28px;
+        margin-bottom: 20px;
+        text-shadow: 2px 2px 5px gold;
+    }
+
+    /* Tabs */
+    .tabs {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .tab-button {
+        background: gold;
+        border: none;
+        padding: 12px 18px;
+        cursor: pointer;
+        font-size: 18px;
+        border-radius: 10px;
+        transition: 0.3s;
+        font-family: 'MedievalSharp', cursive;
+    }
+
+    .tab-button:hover, .tab-button.active {
+        background: #d4af37;
+        color: black;
+        box-shadow: 0px 0px 10px gold;
+    }
+
+    /* Contenido de Tabs */
+    .tab-content {
+        display: none;
+        padding: 20px;
+        background: rgba(0, 0, 0, 0.8);
+        border-radius: 10px;
+        text-align: left;
+        width: 100%;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    /* Imagenes */
+    .object-image {
+        width: 100%;
+        max-width: 200px;
+        border: 2px solid gold;
+        display: block;
+        margin: 10px auto;
+        border-radius: 10px;
+    }
+
+    .req-image {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        margin-right: 10px;
+    }
+
+    /* Listas */
+    .requirements-list {
+        list-style: none;
+        padding: 0;
+        text-align: left;
+    }
+
+    .requirements-list li {
+        display: flex;
+        align-items: center;
+        padding: 5px;
+        border-bottom: 1px solid gold;
+    }
+
+    /* Tabla */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    th, td {
+        border: 1px solid gold;
+        padding: 8px;
+        text-align: left;
+    }
+
+    th {
+        background-color: gold;
+        color: black;
+    }
+</style>
+
+<!-- Script de Tabs -->
+<script>
+    function openTab(evt, tabName) {
+        var i, tabcontent, tabbuttons;
+        tabcontent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].classList.remove("active");
+        }
+        tabbuttons = document.getElementsByClassName("tab-button");
+        for (i = 0; i < tabbuttons.length; i++) {
+            tabbuttons[i].classList.remove("active");
+        }
+        document.getElementById(tabName).classList.add("active");
+        evt.currentTarget.classList.add("active");
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelector(".tab-button.active").click();
+    });
+
+
+    function searchObject() {
+        let query = document.getElementById('search-input').value;
+        if (query.length < 3) return; // Evitar búsquedas con menos de 3 caracteres
+
+        fetch(`/buscar_objeto/?q=${query}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    actualizarPagina(data);
+                } else {
+                    alert("Objeto no encontrado.");
+                }
+            })
+            .catch(error => console.error('Error en la búsqueda:', error));
+    }
+
+    function actualizarPagina(data) {
+        // Actualizar Información
+        document.querySelector(".object-image").src = data.image;
+        document.querySelector(".object-image").alt = data.crafting_name;
+        document.querySelector(".info-section").innerHTML = `
+            <h2>Información del Objeto</h2>
+            <img src="${data.image}" alt="${data.crafting_name}" class="object-image">
+            <p><strong>Nombre:</strong> ${data.crafting_name}</p>
+            <p><strong>Nivel:</strong> ${data.level}</p>
+            <p><strong>Cantidad:</strong> ${data.quantity}</p>
+            <p><strong>Probabilidad:</strong> ${data.probability}%</p>
+            <p><strong>Tiempo de Creación:</strong> ${data.time} segundos</p>
+        `;
+
+        // Actualizar Requisitos
+        let reqList = document.querySelector("#requirements .requirements-list");
+        reqList.innerHTML = "";
+        data.requirements.forEach(req => {
+            reqList.innerHTML += `
+                <li>
+                    <a href="/nft_detail/object/${req.id}/" style="cursor: pointer;">
+                        <img src="${req.image}" alt="" class="req-image">
+                    </a>
+                    ⚒ ${req.name} - Cantidad: ${req.quantity}
+                </li>
+            `;
+        });
+
+        // Actualizar Objetos que se pueden craftear
+        let extraList = document.querySelector("#extra .requirements-list");
+        extraList.innerHTML = "";
+        data.craftingInverse.forEach(req => {
+            extraList.innerHTML += `
+                <li>
+                    <a href="/nft_detail/object/${req.id}/" style="cursor: pointer;">
+                        <img src="${req.image}" alt="" class="req-image">
+                    </a>
+                    ${req.crafting_name} - Cantidad: ${req.quantity} - Profession: ${req.profesion} - Lvl: ${req.level} - Time: ${req.time}
+                </li>
+            `;
+        });
+
+        // Actualizar Transacciones
+        let transTable = document.querySelector("#transactions tbody");
+        transTable.innerHTML = "";
+        data.transactions.forEach(tx => {
+            transTable.innerHTML += `
+                <tr>
+                    <td>${tx.signature}</td>
+                    <td>${tx.blockTime}</td>
+                    <td>${tx.confirmationStatus}</td>
+                </tr>
+            `;
+        });
+    }
+</script>
+<script>
+
+</script>
+
+{% endblock %}
