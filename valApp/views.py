@@ -5,6 +5,7 @@ from .models import Professions, Heroes, Races, Crafting, craftingRequirements, 
 from solan.service.phantom_wallet import get_nft_transactions
 import json
 from django.views.decorators.csrf import csrf_exempt
+from .funciones import functions
 def index(request):
     title = 'Welcome to the Jungle !'
     professions = Professions.objects.all();
@@ -125,15 +126,28 @@ def buscador_objeto(request):
         try:
             nfts = Objects.objects.filter(name__icontains=query)
             nft = nfts.first() if nfts.exists() else None
-            #transactions = get_nft_transactions(nft.mint, 5)
             transactions = []
+            
+           
+            holders = []
           
             if nft:
+
+                if nft.mint != '0':
+                    transactions = get_nft_transactions(nft.mint, 5)
+                    holders = functions.getMaxSupply(nft.mint)
+
+
+
+
                 crafting = Crafting.objects.get(object=nft.id)
                 requirements = craftingRequirements.objects.filter(craft=crafting)
 
                 requirements_list = [{'id': req.object.id, 'name': req.object.name, 'quantity': req.quantity, 'image': req.object.image.url if req.object.image.url else ''} for req in requirements]
 
+                type_convertido = crafting.object.objectType.name.replace(" ", "-").lower()
+                kind_convertido = crafting.object.name.replace(" ", "-").lower()
+                marketURl = 'https://market.valannia.com/market/'+crafting.object.objectCategory.name+'?type='+type_convertido+'&kind='+kind_convertido
                 
                 crafting_details.append({
                     'crafting_name': crafting.object.name,
@@ -141,6 +155,9 @@ def buscador_objeto(request):
                     'quantity': crafting.quantity,
                     'probability': crafting.probability,
                     'time': crafting.time,
+                    'profesion': crafting.proffesion.name,
+                    'urlMarket': marketURl,
+                    'supply': crafting.object.supply,
                     'image': crafting.object.image.url if crafting.object.image else '',
                     'requirements': requirements_list
                 })
@@ -159,6 +176,8 @@ def buscador_objeto(request):
                         'profesion': req.craft.proffesion.name,
                     })
 
+
+
                 nft_data = {
                     'id': nft.id,
                     'name': nft.name,
@@ -173,7 +192,8 @@ def buscador_objeto(request):
                     'nft': nft_data,
                     'transactions': transactions,
                     'crafting_details_by_level': crafting_details,
-                    'craftingInverse_details': craftingInverse_details
+                    'craftingInverse_details': craftingInverse_details,
+                    'holders': holders,
                 }
 
                 
@@ -183,6 +203,7 @@ def buscador_objeto(request):
             else:
                 return JsonResponse({"success": False, "error": "NFT not found"})
         except Objects.DoesNotExist:
+            print('sws')
             return JsonResponse({"success": False, "error": "Object not found"})
         except Exception as e:
             print('ss')

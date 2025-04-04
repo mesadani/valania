@@ -31,6 +31,9 @@ class Objects(models.Model):
     image = CloudinaryField('image', folder='objects', blank=True, null=True)  # Permitir nulo y vacío
     mint = models.CharField(max_length=200)
     uri = models.CharField(max_length=200)
+    nftImage = models.CharField(max_length=500,default=0)
+    supply = models.IntegerField(default=0)
+
     def __str__(self):
         return self.name
     

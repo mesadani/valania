@@ -20,10 +20,13 @@
         <h2>Información del Objeto</h2>
         <img src="" id="object-image" class="object-image" alt="">
         <p><strong>Nombre:</strong> <span id="crafting_name"></span></p>
+        <p><strong>Profession:</strong> <span id="profession"></span></p>
         <p><strong>Nivel:</strong> <span id="level"></span></p>
         <p><strong>Cantidad:</strong> <span id="quantity"></span></p>
         <p><strong>Probabilidad:</strong> <span id="probability"></span>%</p>
         <p><strong>Tiempo de Creación:</strong> <span id="time"></span> segundos</p>
+        <p><strong>Url Market:</strong> <span id="urlMarket"></span> </p>
+        <p><strong>Supply:</strong> <span id="supply"></span> </p>
     </div>
 
     <!-- Contenedor de pestañas -->
@@ -31,6 +34,7 @@
         <button class="tab-button active" onclick="openTab(event, 'requirements')">⚒ Requisitos</button>
         <button class="tab-button" onclick="openTab(event, 'extra')">📜 Objetos para craftear:</button>
         <button class="tab-button" onclick="openTab(event, 'transactions')">📜 Transacciones</button>
+        <button class="tab-button" onclick="openTab(event, 'holders')">📜 Top Holders</button>
     </div>
 
     <!-- Contenido de pestañas -->
@@ -56,6 +60,21 @@
                     <th>Firma</th>
                     <th>Hora del Bloque</th>
                     <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Aquí se llenarán las transacciones con JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <div id="holders" class="tab-content">
+        <h2>Transacciones</h2>
+        <table id="holders-table">
+            <thead>
+                <tr>
+                    <th>Owner</th>
+                    <th>Amount</th>
                 </tr>
             </thead>
             <tbody>
@@ -282,6 +301,9 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById("quantity").innerText = data.crafting_details_by_level[0].quantity;
         document.getElementById("probability").innerText = data.crafting_details_by_level[0].probability;
         document.getElementById("time").innerText = data.crafting_details_by_level[0].time;
+        document.getElementById("profession").innerText = data.crafting_details_by_level[0].profesion;
+        document.getElementById("urlMarket").innerHTML = `<a href="${data.crafting_details_by_level[0].urlMarket}" target="_blank">${data.crafting_details_by_level[0].urlMarket}</a>`;
+        document.getElementById("supply").innerText = data.crafting_details_by_level[0].supply;
 
         // Actualizar Requisitos
         let reqList = document.getElementById("requirements-list");
@@ -317,6 +339,18 @@ document.addEventListener('DOMContentLoaded', function () {
                     <td>${tx.signature}</td>
                     <td>${tx.blockTime}</td>
                     <td>${tx.confirmationStatus}</td>
+                </tr>
+            `;
+        });
+
+        // Actualizar Holders
+        let holdersTable = document.getElementById("holders-table").getElementsByTagName('tbody')[0];
+        holdersTable.innerHTML = "";
+        data.holders.forEach(hol => {
+            holdersTable.innerHTML += `
+                <tr>
+                    <td>${hol.owner}</td>
+                    <td>${hol.amount}</td>
                 </tr>
             `;
         });

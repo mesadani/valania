@@ -6,7 +6,7 @@ from solana.rpc.api import Client  # Este es el cliente para interactuar con Sol
 from solders.pubkey import Pubkey
 from valApp.models import Objects
 
-SOLANA_API_URL = "https://api.mainnet-beta.solana.com"
+SOLANA_API_URL = "https://rpc.helius.xyz/?api-key=a3d88e42-62d1-4f91-b43d-a316f334fc45"
 client = Client(SOLANA_API_URL)
 
 def get_balance(wallet_address):
@@ -33,7 +33,7 @@ def get_balance(wallet_address):
     else:
         raise Exception("Error al consultar el saldo de la wallet")
 
-SOLANA_API_URL = "https://api.mainnet-beta.solana.com"
+
 METADATA_PROGRAM_ID = Pubkey.from_string("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s")
 
 def get_nft_metadata(mint_address):
@@ -111,7 +111,33 @@ def get_nfts(wallet_address):
     else:
         raise Exception("Error al consultar el saldo de la wallet")
 
+def get_owner_from_token_account(account_address):
+    headers = {
+        "Content-Type": "application/json",
+    }
 
+    payload = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "getAccountInfo",
+        "params": [
+            account_address,
+            {"encoding": "jsonParsed"}
+        ]
+    }
+
+    response = requests.post(SOLANA_API_URL, headers=headers, json=payload)
+
+    if response.status_code == 200:
+        result = response.json()["result"]["value"]
+        if result:
+            owner = result["data"]["parsed"]["info"]["owner"]
+            return owner
+        else:
+            return None
+    else:
+        print("Error al obtener el owner", response.status_code)
+        return None
 def get_nft_supply(mint):
     """
     Función para obtener el saldo de una wallet en la blockchain de Solana.
@@ -132,10 +158,81 @@ def get_nft_supply(mint):
 
     if response.status_code == 200:
         result = response.json()
+        print(result)
+
         return result.get('result', {}).get('value', 0)
     else:
         raise Exception("Error al consultar el saldo de la wallet")
     
+def getTokenAccountsByMint(mint):
+
+    headers = {
+        "Content-Type": "application/json",
+    }
+
+    payload = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "getTokenAccountsByMint",
+        "params": [mint, {"encoding": "jsonParsed"}],
+    }
+
+    response = requests.post(SOLANA_API_URL, headers=headers, json=payload)
+
+    if response.status_code == 200:
+        # Obtener todas las cuentas de token asociadas al mint
+        token_accounts = response.json().get("result", {}).get("value", [])
+        return token_accounts
+    else:
+        raise Exception("Error al consultar las cuentas del mint")
+def getTokenLargestAccounts(mint):
+    """
+    
+    """
+    headers = {
+        "Content-Type": "application/json",
+    }
+
+    # JSON para la solicitud RPC
+    payload = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "getTokenLargestAccounts",
+        "params": [mint],
+    }
+
+    response = requests.post(SOLANA_API_URL, headers=headers, json=payload)
+
+    
+    if response.status_code == 200:
+        largest_accounts = response.json()["result"]["value"]
+        result = largest_accounts
+        return result
+    else:
+        raise Exception("Error al consultar el saldo de la wallet")    
+    
+def getTransactionDetails(signature):
+    """
+    Obtiene los detalles de una transacción para ver el precio de un NFT.
+    """
+    headers = {
+        "Content-Type": "application/json",
+    }
+
+    payload = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "getTransaction",
+        "params": [signature, {"encoding": "jsonParsed"}],
+    }
+
+    response = requests.post(SOLANA_API_URL, headers=headers, json=payload)
+
+    if response.status_code == 200:
+        return response.json().get("result", {})
+    else:
+        print(f"Error al obtener detalles de la transacción: {response.status_code}")
+        return None
 
 def get_nft_transactions(mint,limit):
     """
