@@ -25,10 +25,10 @@ class ObjectCategorys(models.Model):
 
 class Objects(models.Model):
     name = models.CharField(max_length=200)
-    description = models.TextField()
+    description = models.TextField(blank=True, null=True)  # Permitir nulo y vacío
     objectType = models.ForeignKey(ObjectTypes, on_delete=models.CASCADE)
     objectCategory = models.ForeignKey(ObjectCategorys, on_delete=models.CASCADE)
-    image = CloudinaryField('image', folder='objects')
+    image = CloudinaryField('image', folder='objects', blank=True, null=True)  # Permitir nulo y vacío
     mint = models.CharField(max_length=200)
     uri = models.CharField(max_length=200)
     def __str__(self):
