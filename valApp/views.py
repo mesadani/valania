@@ -148,6 +148,7 @@ def buscador_objeto(request):
                 type_convertido = crafting.object.objectType.name.replace(" ", "-").lower()
                 kind_convertido = crafting.object.name.replace(" ", "-").lower()
                 marketURl = 'https://market.valannia.com/market/'+crafting.object.objectCategory.name+'?type='+type_convertido+'&kind='+kind_convertido
+                urlPorfession = 'https://market.valannia.com/realms/professions/'+crafting.proffesion.name.lower().replace(" ", "-")
                 
                 crafting_details.append({
                     'crafting_name': crafting.object.name,
@@ -157,6 +158,7 @@ def buscador_objeto(request):
                     'time': crafting.time,
                     'profesion': crafting.proffesion.name,
                     'urlMarket': marketURl,
+                    'urlPorfession': urlPorfession,
                     'supply': crafting.object.supply,
                     'image': crafting.object.image.url if crafting.object.image else '',
                     'requirements': requirements_list

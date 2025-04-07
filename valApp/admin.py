@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 from .models import (
     Professions, Crafting, craftingRequirements, Objects, ObjectCategorys, ObjectTypes,
-    Races, Rarities, RolesCombatUnits, CombatUnits, HeroeTypes, Heroes, HeroeRoles
+    Races, Rarities, RolesCombatUnits, CombatUnits, HeroeTypes, Heroes, HeroeRoles, Pets, PetsTypes
 )
 
 # Método común para mostrar imágenes
@@ -48,6 +48,16 @@ class CombatUnitsAdmin(admin.ModelAdmin):
     def race_name(self, obj):
         return obj.race.name
     race_name.short_description = 'Race'
+
+
+@admin.register(Pets)
+class CombatUnitsAdmin(admin.ModelAdmin):
+    list_display = ('name', image_tag)
+    list_filter = ('rarity',)
+
+    def race_name(self, obj):
+        return obj.race.name
+    race_name.short_description = 'Rarity'    
 
 # Registro de modelos sin personalización
 admin.site.register(ObjectTypes)

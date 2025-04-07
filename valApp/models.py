@@ -136,3 +136,23 @@ class CombatUnits(models.Model):
     def __str__(self):
         return self.name     
     
+class PetsTypes(models.Model):
+    name = models.CharField(max_length=200)
+    description = models.TextField() 
+
+    def __str__(self):
+        return self.name     
+
+class Pets(models.Model):
+    name = models.CharField(max_length=200)
+    type = models.ForeignKey(PetsTypes, on_delete=models.CASCADE)
+    supply = models.IntegerField()
+    rarity = models.ForeignKey(Rarities, on_delete=models.CASCADE)
+    price = models.IntegerField()
+    location = models.CharField(max_length=200)
+    description = models.TextField()
+
+    image = CloudinaryField('image', folder='pets')
+
+    def __str__(self):
+        return self.name    
