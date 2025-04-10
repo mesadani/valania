@@ -19,15 +19,17 @@ class CraftingRequirementsInline(admin.TabularInline):
 @admin.register(Crafting)
 class CraftingAdmin(admin.ModelAdmin):
     inlines = [CraftingRequirementsInline]
-    list_display = ( 'object_image','object_name', 'prof_name')
+    list_display = ( 'object_image','linked_object_name', 'prof_name')
     list_filter = ('level','proffesion')
 
     def prof_name(self, obj):
         return obj.proffesion.name
     prof_name.short_description = 'Profession'
-    def object_name(self, obj):
-        return obj.object.name
-    object_name.short_description = 'Object'
+    def linked_object_name(self, obj):
+        # Create a link to the edit page of the related object
+        url = f"/admin/valApp/objects/{obj.object.id}/change/"
+        return format_html('<a href="{}">{}</a>', url, obj.object.name)
+    linked_object_name.short_description = 'Object'
 
     def object_image(self, obj):
         if obj.object.image:
