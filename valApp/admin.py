@@ -19,15 +19,21 @@ class CraftingRequirementsInline(admin.TabularInline):
 @admin.register(Crafting)
 class CraftingAdmin(admin.ModelAdmin):
     inlines = [CraftingRequirementsInline]
-    list_display = ('object_name', 'prof_name', image_tag)
-    list_filter = ('level',)
+    list_display = ( 'object_image','object_name', 'prof_name')
+    list_filter = ('level','proffesion')
 
     def prof_name(self, obj):
-        return obj.profession.name
+        return obj.proffesion.name
     prof_name.short_description = 'Profession'
     def object_name(self, obj):
         return obj.object.name
     object_name.short_description = 'Object'
+
+    def object_image(self, obj):
+        if obj.object.image:
+            return format_html('<img src="{}" width="50" height="50" />', obj.object.image.url)
+        return "No Image"
+    object_image.short_description = 'Image'
 
 @admin.register(Objects)
 class ObjectsAdmin(admin.ModelAdmin):
