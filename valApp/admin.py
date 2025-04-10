@@ -19,6 +19,15 @@ class CraftingRequirementsInline(admin.TabularInline):
 @admin.register(Crafting)
 class CraftingAdmin(admin.ModelAdmin):
     inlines = [CraftingRequirementsInline]
+    list_display = ('object_name', 'prof_name', image_tag)
+    list_filter = ('level',)
+
+    def prof_name(self, obj):
+        return obj.profession.name
+    prof_name.short_description = 'Profession'
+    def object_name(self, obj):
+        return obj.object.name
+    object_name.short_description = 'Object'
 
 @admin.register(Objects)
 class ObjectsAdmin(admin.ModelAdmin):
@@ -51,13 +60,13 @@ class CombatUnitsAdmin(admin.ModelAdmin):
 
 
 @admin.register(Pets)
-class CombatUnitsAdmin(admin.ModelAdmin):
+class PetsAdmin(admin.ModelAdmin):  # Renamed to PetsAdmin
     list_display = ('name', image_tag)
     list_filter = ('rarity',)
 
-    def race_name(self, obj):
-        return obj.race.name
-    race_name.short_description = 'Rarity'    
+    def rarity_name(self, obj):  # Corrected method name
+        return obj.rarity.name
+    rarity_name.short_description = 'Rarity'  
 
 # Registro de modelos sin personalización
 admin.site.register(ObjectTypes)
