@@ -156,3 +156,49 @@ class Pets(models.Model):
 
     def __str__(self):
         return self.name    
+
+class ObjectsPrices(models.Model):
+    object = models.ForeignKey(Objects, on_delete=models.CASCADE)
+    price = models.FloatField() 
+    amount = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name 
+
+
+class Guilds(models.Model):
+    uuid = models.CharField(max_length=200)
+    name = models.CharField(max_length=200)
+    avatar = models.CharField(max_length=500)
+    tag = models.CharField(max_length=200)
+    race = models.ForeignKey(Races, on_delete=models.CASCADE)
+    description = models.TextField() 
+    language = models.CharField(max_length=100)
+    members = models.IntegerField()
+    announce = models.TextField()
+    leader = models.CharField(max_length=200)
+    usdc = models.FloatField()
+    ranking = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return self.name 
+
+class GuildMembers(models.Model):
+    idGuild = models.ForeignKey(Guilds, on_delete=models.CASCADE)
+    name = models.CharField(max_length=200)
+    kkey = models.CharField(max_length=200)
+    address = models.CharField(max_length=500)
+    uuidGuild = models.CharField(max_length=500)
+    points = models.IntegerField()
+    artisan = models.IntegerField()
+    alchemist = models.IntegerField()
+    architect = models.IntegerField()
+    blacksmith = models.IntegerField()
+    engineer = models.IntegerField()
+    explorer = models.IntegerField()
+    jeweler = models.IntegerField()
+    miner = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return self.name               

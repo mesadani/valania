@@ -15,17 +15,19 @@ import cloudinary.uploader
 # Importar modelos de Django
 from valApp.models import Objects
 from solan.service import phantom_wallet
+from valApp.funciones import functions
 
 def importarDatos():
     objects = Objects.objects.all()
     for obj in objects:
         if obj.mint != "0" and obj.nftImage == "0":
             infoNft = phantom_wallet.get_nft_metadata(obj.mint)
+            print(infoNft)
             uri = infoNft.get("uri", "No URI found")
             metadata = phantom_wallet.obtener_json_desde_uri(uri)
 
             response = requests.get(metadata["image"])
-
+            
             # Verificamos que la solicitud fue exitosa
             if response.status_code == 200:
                 # Convertimos el contenido de la imagen a un archivo que Django puede manejar
@@ -33,7 +35,7 @@ def importarDatos():
                 
                 # Subimos la imagen a Cloudinary
                 upload_result = cloudinary.uploader.upload(image_content, folder='objects')
-
+                
                 # Guardamos la URL de la imagen subida en el campo de la instancia de tu modelo
                 obj.image = upload_result['secure_url']
                 obj.description = metadata['description']
@@ -193,9 +195,9 @@ def verificar_listado_nft(mint):
     else:
         print("❌ El NFT no está listado actualmente.")
 
-        
-verificar_listado_nft("6o4AZhaqmLuBrf8Sy8tGgTxZ5uPkcsbPiNTvCLbSA8NC")
-
-
-#importacionValania()          
+#functions.importMembersGuilds()        
+#verificar_listado_nft("6o4AZhaqmLuBrf8Sy8tGgTxZ5uPkcsbPiNTvCLbSA8NC")
+#importarDatos()
+#importacionValania()
+#getNFTPrices("B1TKjiMGUhGk32v2yYQ5Q7Rhb2a9U8oGABAtNz4CtfSq")
 #getMaxSupply('B1TKjiMGUhGk32v2yYQ5Q7Rhb2a9U8oGABAtNz4CtfSq')

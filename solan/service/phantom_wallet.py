@@ -88,16 +88,14 @@ def get_nft_metadata(mint_address):
     else:
         return {"error": "Error al consultar la metadata"}
 
-
-import requests
-
+ 
 def getMarketPrices(category, types, kind):
     # URL a la que se hace la llamada
     url = "https://rtr.valannia.net/asset/item/list"
     info = []
     # Body del POST (igual al de Postman)
     payload = {
-        "pagination": {"count": 10, "page": 0},
+        "pagination": {"count": 20, "page": 0},
         "priceOrder": "LTH",
         "item": {
             "systems": ["Market"],
@@ -129,10 +127,64 @@ def getMarketPrices(category, types, kind):
 
         return info;
     else:
-        print(f"Error en la petición: {response.status_code}")
+        return [];
+        
+def getGuilds():
+     # URL a la que se hace la llamada
+    url = "https://valannia.sytes.net/guild/find"
+    info = []
+    # Body del POST (igual al de Postman)
+    payload = {"count":100,"page":0,"race":None,"language":None,"invites":None}
 
+    # Headers
+    headers = {
+        "Content-Type": "application/json"
+    }
 
+    # Hacer la petición
+    response = requests.post(url, json=payload, headers=headers)
 
+    # Aceptamos 200 OK y 201 Created
+    if response.status_code in [200, 201]:
+        data = response.json()
+
+        # Extraemos price y amount de cada elemento
+         
+        guilds = data.get("content", {}).get("guilds", [])
+        for guild in guilds:
+            info.append(guild)
+
+        return info;
+    else:
+        return [];
+
+def getMembersGuilds(uuid):
+     # URL a la que se hace la llamada
+    url = "https://rtr.valannia.net/realms/state/rankingMembers"
+    info = []
+    # Body del POST (igual al de Postman)
+    payload = {"uuid":uuid,"pagination":{"count":9999,"page":0}}
+    print(uuid)
+    # Headers
+    headers = {
+        "Content-Type": "application/json"
+    }
+
+    # Hacer la petición
+    response = requests.post(url, json=payload, headers=headers)
+    
+    # Aceptamos 200 OK y 201 Created
+    if response.status_code in [200, 201]:
+        data = response.json()
+        
+        # Extraemos price y amount de cada elemento
+        for item in data.get("elements", []):
+        
+            info.append(item)
+
+        return info;
+    else:
+        return [];
         
 def get_nfts(wallet_address):
     headers = {
