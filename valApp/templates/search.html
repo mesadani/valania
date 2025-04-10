@@ -301,7 +301,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById("quantity").innerText = data.crafting_details_by_level[0].quantity;
         document.getElementById("probability").innerText = data.crafting_details_by_level[0].probability;
         document.getElementById("time").innerText = data.crafting_details_by_level[0].time;
-        document.getElementById("profession").innerText = data.crafting_details_by_level[0].profesion;
+        document.getElementById("profession").innerHTML = `<a href="${data.crafting_details_by_level[0].urlPorfession}" target="_blank">${data.crafting_details_by_level[0].profesion}</a>`;
         document.getElementById("urlMarket").innerHTML = `<a href="${data.crafting_details_by_level[0].urlMarket}" target="_blank">${data.crafting_details_by_level[0].urlMarket}</a>`;
         document.getElementById("supply").innerText = data.crafting_details_by_level[0].supply;
 

@@ -4,8 +4,10 @@ import base64
 import requests
 from solana.rpc.api import Client  # Este es el cliente para interactuar con Solana
 from solders.pubkey import Pubkey
-from valApp.models import Objects
+from valApp.models import Objects, ObjectCategorys, ObjectTypes
+from django.core.files.base import ContentFile
 
+import cloudinary.uploader
 SOLANA_API_URL = "https://rpc.helius.xyz/?api-key=a3d88e42-62d1-4f91-b43d-a316f334fc45"
 client = Client(SOLANA_API_URL)
 
@@ -35,6 +37,9 @@ def get_balance(wallet_address):
 
 
 METADATA_PROGRAM_ID = Pubkey.from_string("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s")
+
+
+
 
 def get_nft_metadata(mint_address):
     mint_pubkey = Pubkey.from_string(mint_address)
@@ -94,13 +99,13 @@ def get_nfts(wallet_address):
         "id": 1,
         "method": "getTokenAccountsByOwner",
         "params": [wallet_address,
-        {
-            "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        },
-        {
-            "encoding": "jsonParsed"
-        }
-],
+            {
+                "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+            },
+            {
+                "encoding": "jsonParsed"
+            }
+        ],
     }
 
     response = requests.post(SOLANA_API_URL, json=payload, headers=headers)
@@ -271,15 +276,64 @@ def extract_nft_info(nft_data):
 
             uri_data = get_nft_metadata(mint)  # Obtener URI de la metadata
             uri = uri_data.get("uri", "No URI found")
-
+            category_value = '';
+            type_value = '';
             if "valannia" in uri.lower():
                 metadata = obtener_json_desde_uri(uri)  # Obtener datos del JSON
                 if amount != '0':
                     nombreBd = Objects.objects.filter(name=metadata['name']).first()
                     if nombreBd:
-                        nombreBd.mint = mint
-                        nombreBd.uri = uri
-                        nombreBd.save()              
+                        if nombreBd.mint == '0':
+                            nombreBd.mint = mint
+                            nombreBd.uri = uri
+                            nombreBd.save() 
+                            print(f"objti creadoPPP: {metadata['name']}")
+                        else:
+                            print(f"objti existente: {metadata['name']}")
+                    else:
+                
+                        if 'attributes' in metadata:
+                            for atributo in metadata['attributes']:
+                                if atributo['trait_type'] == 'category':
+                                    category_value = atributo['value']
+                                elif atributo['trait_type'] == 'type':
+                                    type_value = atributo['value']
+
+                            
+                            if category_value != '' and type_value != '':
+                                response = requests.get(metadata["image"])
+                                final = '';
+                            # Verificamos que la solicitud fue exitosa
+                                if response.status_code == 200:
+                                    # Convertimos el contenido de la imagen a un archivo que Django puede manejar
+                                    image_content = ContentFile(response.content)                                
+                                    # Subimos la imagen a Cloudinary
+                                    upload_result = cloudinary.uploader.upload(image_content, folder='objects')
+
+                                    final = upload_result['secure_url']
+
+                                object_category, _ = ObjectCategorys.objects.get_or_create(name=category_value)
+                                object_type, _ = ObjectTypes.objects.get_or_create(name=type_value)
+                                Objects.objects.create(
+                                    name=metadata['name'], 
+                                    description=metadata['description'], 
+                                    objectType=object_type, 
+                                    objectCategory=object_category,
+                                    image= final,
+                                    mint=mint,
+                                    uri=uri,
+                                    nftImage=metadata['image'],
+                                    supply=int(amount))
+                                print(f"objti creado: {metadata['name']}")   
+                            else:
+                                print(f"no: {metadata['name']}")    
+
+                             
+                                
+                                # Realiza la acción que corresponde cuando tiene 'attributes'
+                        else:
+                            print("Este JSON NO tiene 'attributes'.")
+                        
 
                     nft_list.append({
                         "mint": mint,

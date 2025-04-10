@@ -92,7 +92,7 @@ def getMaxSupply(mint):
 
 def getNFTPrices(mint_address):
     # Obtener las transacciones relacionadas con el mint
-    signatures = phantom_wallet.get_nft_transactions(mint_address,10)
+    signatures = phantom_wallet.get_nft_transactions(mint_address,50)
 
     prices = []
     for signature_info in signatures:
@@ -131,14 +131,71 @@ def extract_price_from_log(log):
         return price
     return None
 
-# Ejemplo de uso
-mint_address = 'B1TKjiMGUhGk32v2yYQ5Q7Rhb2a9U8oGABAtNz4CtfSq'
-prices = getNFTPrices(mint_address)
+def importacionValania():
+    nfts = phantom_wallet.get_nfts('2vTuoHNQiief6RGTwmeUKNTkHdK5DpzaRHcs6XNfUxsV')
+    for nft in nfts:
+        print(nft)
+      
+    data =  phantom_wallet.extract_nft_info({"nfts": nfts})
 
-if prices:
-    print(f"Precios del NFT en el marketplace: {prices}")
-else:
-    print("No se encontraron precios para este mint.")
 
-#importarDatos()          
+
+import requests
+from datetime import datetime
+
+def verificar_listado_nft(mint):
+    url = "https://mainnet.helius-rpc.com/?api-key=a3d88e42-62d1-4f91-b43d-a316f334fc45"
+    headers = {
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "getNftEditions",
+        "params": [
+            {
+                "query": {
+                    "mint": mint
+                },
+                "options": {
+                    "limit": 50,
+                    "sortOrder": "desc"
+                }
+            }
+        ]
+    }
+
+    response = requests.post(url, headers=headers, json=payload)
+
+    if response.status_code != 200:
+        print("❌ Error al consultar la API de Helius:")
+        print(response.text)
+        return
+
+    data = response.json()
+    eventos = data.get("result", {}).get("result", [])
+
+    ultimo_listado = None
+
+    for evento in eventos:
+        tipo = evento.get("type")
+        if tipo == "NFT_LISTING":
+            ultimo_listado = evento
+            break
+        elif tipo in ["NFT_CANCEL_LISTING", "NFT_SALE"]:
+            break
+
+    if ultimo_listado:
+        precio_sol = evento.get("amount", 0) / 1e9
+        marketplace = evento.get("source", "Desconocido")
+        fecha = datetime.utcfromtimestamp(evento.get("timestamp", 0)).strftime('%Y-%m-%d %H:%M:%S')
+        print(f"✅ El NFT está listado en {marketplace} por {precio_sol} SOL (desde {fecha} UTC)")
+    else:
+        print("❌ El NFT no está listado actualmente.")
+
+        
+verificar_listado_nft("6o4AZhaqmLuBrf8Sy8tGgTxZ5uPkcsbPiNTvCLbSA8NC")
+
+
+#importacionValania()          
 #getMaxSupply('B1TKjiMGUhGk32v2yYQ5Q7Rhb2a9U8oGABAtNz4CtfSq')
