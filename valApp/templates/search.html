@@ -7,25 +7,24 @@
 </div>
 <!-- Buscador de objetos -->
 <div class="search-container">
-    <input type="text" id="wallet" placeholder="Ingresa dirección de wallet">
-    <input type="text" id="search-input" placeholder="Buscar objeto...">
-    <button onclick="searchObject()">🔍 Buscar</button>
+    <input type="text" id="wallet" placeholder="Put Wallet">
+    <input type="text" id="search-input" placeholder="Serach object...">
+    <button onclick="searchObject()">🔍 Search</button>
 </div>
 
 <!-- Contenedor de Detalles del Objeto -->
 <div class="rpg-container">
-    <h1 class="title">Detalles del Objeto</h1>
 
     <!-- Información del Objeto (Fija) -->
     <div class="info-section">
-        <h2>Información del Objeto</h2>
+        <h2>Item Information</h2>
         <img src="" id="object-image" class="object-image" alt="">
-        <p><strong>Nombre:</strong> <span id="crafting_name"></span></p>
+        <p><strong>Name:</strong> <span id="crafting_name"></span></p>
         <p><strong>Profession:</strong> <span id="profession"></span></p>
-        <p><strong>Nivel:</strong> <span id="level"></span></p>
-        <p><strong>Cantidad:</strong> <span id="quantity"></span></p>
-        <p><strong>Probabilidad:</strong> <span id="probability"></span>%</p>
-        <p><strong>Tiempo de Creación:</strong> <span id="time"></span> segundos</p>
+        <p><strong>Level:</strong> <span id="level"></span></p>
+        <p><strong>Amount:</strong> <span id="quantity"></span></p>
+        <p><strong>Probability:</strong> <span id="probability"></span>%</p>
+        <p><strong>Creation Time:</strong> <span id="time"></span> seconds</p>
         <p><strong>Url Market:</strong> <span id="urlMarket"></span> </p>
         <p><strong>Supply:</strong> <span id="supply"></span> </p>
         <p><strong>HAVE IN WALLET:</strong> <span id="have"></span> </p>
@@ -33,35 +32,35 @@
 
     <!-- Contenedor de pestañas -->
     <div class="tabs">
-        <button class="tab-button active" onclick="openTab(event, 'requirements')">⚒ Requisitos</button>
-        <button class="tab-button" onclick="openTab(event, 'extra')">📜 Objetos para craftear:</button>
-        <button class="tab-button" onclick="openTab(event, 'transactions')">📜 Transacciones</button>
+        <button class="tab-button active" onclick="openTab(event, 'requirements')">⚒ Requirements</button>
+        <button class="tab-button" onclick="openTab(event, 'extra')">📜 Items to craft:</button>
+        <button class="tab-button" onclick="openTab(event, 'transactions')">📜 Transactions</button>
         <button class="tab-button" onclick="openTab(event, 'holders')">📜 Top Holders</button>
     </div>
 
     <!-- Contenido de pestañas -->
     <div id="requirements" class="tab-content active">
-        <h2>Requisitos de Fabricación</h2>
+        <h2>Manufacturing Requirements</h2>
         <ul class="requirements-list" id="requirements-list">
             <!-- Aquí se llenarán los requisitos con JavaScript -->
         </ul>
     </div>
 
     <div id="extra" class="tab-content">
-        <h2>Se utiliza para craftear:</h2>
+        <h2>It is used to craft:</h2>
         <ul class="requirements-list" id="craftingInverse-list">
             <!-- Aquí se llenarán los objetos para craftear con JavaScript -->
         </ul>
     </div>
 
     <div id="transactions" class="tab-content">
-        <h2>Transacciones</h2>
+        <h2>Transactions</h2>
         <table id="transactions-table">
             <thead>
                 <tr>
-                    <th>Firma</th>
-                    <th>Hora del Bloque</th>
-                    <th>Estado</th>
+                    <th>Signature</th>
+                    <th>Block Time</th>
+                    <th>Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -71,7 +70,7 @@
     </div>
 
     <div id="holders" class="tab-content">
-        <h2>Transacciones</h2>
+        <h2>Transactions</h2>
         <table id="holders-table">
             <thead>
                 <tr>

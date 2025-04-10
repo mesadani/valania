@@ -7,6 +7,7 @@
     <title>Buscador de Objetos</title>
     <link rel="stylesheet" href="{% static 'styles/main.css' %}">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     <style>
         * {
@@ -56,7 +57,9 @@
         }
 
         .menu-item a {
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             padding: 8px;
             background: #34495e;
             color: white;
@@ -64,6 +67,14 @@
             border-radius: 5px;
             transition: background 0.3s;
             text-align: center;
+        }
+
+        .menu-item a:hover, .menu-item a.active {
+            background: #1abc9c;
+        }
+
+        .menu-item i {
+            margin-right: 8px;
         }
 
         .menu-item a:hover {
@@ -96,25 +107,39 @@
             <h2>Menú</h2>
             <ul class="menu-list">
                 <li class="menu-item">
-                    <a href="/heroes">Heroes</a>
+                    <a href="/heroes" class="{% if request.path == '/heroes' %}active{% endif %}">
+                        <i class="fas fa-user-shield"></i> Heroes
+                    </a>
                 </li>
                 <li class="menu-item">
-                    <a href="/combatUnits">CombatUnits</a>
+                    <a href="/combatUnits" class="{% if request.path == '/combatUnits' %}active{% endif %}">
+                        <i class="fas fa-fist-raised"></i> CombatUnits
+                    </a>
                 </li>
                 <li class="menu-item">
-                    <a href="/professions">Professions</a>
+                    <a href="/professions" class="{% if request.path == '/professions' %}active{% endif %}">
+                        <i class="fas fa-briefcase"></i> Professions
+                    </a>
                 </li>
                 <li class="menu-item">
-                    <a href="/search">Search Craft</a>
+                    <a href="/search" class="{% if request.path == '/search' %}active{% endif %}">
+                        <i class="fas fa-search"></i> Search
+                    </a>
                 </li>
                 <li class="menu-item">
-                    <a href="/inventory">Inventory</a>
+                    <a href="/inventory" class="{% if request.path == '/inventory' %}active{% endif %}">
+                        <i class="fas fa-boxes"></i> Inventory
+                    </a>
                 </li>
                 <li class="menu-item">
-                    <a href="/tracker">Wallet Tracker</a>
+                    <a href="/tracker" class="{% if request.path == '/tracker' %}active{% endif %}">
+                        <i class="fas fa-wallet"></i> Wallet Tracker
+                    </a>
                 </li>
                 <li class="menu-item">
-                    <a href="#">ChatBot</a>
+                    <a href="#" class="{% if request.path == '/chatbot' %}active{% endif %}">
+                        <i class="fas fa-comments"></i> ChatBot
+                    </a>
                 </li>
             </ul>
         </div>

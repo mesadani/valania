@@ -7,6 +7,7 @@ import json
 from django.views.decorators.csrf import csrf_exempt
 from .funciones import functions
 from collections import defaultdict
+from deep_translator import GoogleTranslator
 def index(request):
     title = 'Welcome to the Jungle !'
     professions = Professions.objects.all();
@@ -130,13 +131,17 @@ def buscador_objeto(request):
         if not query:
             return JsonResponse({"success": False, "error": "No query provided"})
 
+        translated_query = GoogleTranslator(source='auto', target='en').translate(query)
+
+        print(translated_query)
+
         data = []
         if wallet:
             nfts = get_nfts(wallet)       
             data = extract_nft_info({"nfts": nfts})
 
         
-        nft = Objects.objects.filter(name__icontains=query).select_related(
+        nft = Objects.objects.filter(name__icontains=translated_query).select_related(
             'objectType', 'objectCategory'
         ).first()
         
