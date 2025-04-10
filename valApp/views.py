@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse,JsonResponse
 # Create your views here.
 from .models import Professions, Heroes, Races, Crafting, craftingRequirements, CombatUnits,Rarities, Objects
-from solan.service.phantom_wallet import get_nft_transactions
+from solan.service.phantom_wallet import get_nft_transactions, get_nfts, extract_nft_info
 import json
 from django.views.decorators.csrf import csrf_exempt
 from .funciones import functions
@@ -126,13 +126,20 @@ def buscador_objeto(request):
     try:
         data = json.loads(request.body)
         query = data.get('q', '')
+        wallet = data.get('wallet', '')
         if not query:
             return JsonResponse({"success": False, "error": "No query provided"})
 
+        data = []
+        if wallet:
+            nfts = get_nfts(wallet)       
+            data = extract_nft_info({"nfts": nfts})
+
+        
         nft = Objects.objects.filter(name__icontains=query).select_related(
             'objectType', 'objectCategory'
         ).first()
-
+        
         if not nft:
             return JsonResponse({"success": False, "error": "NFT not found"})
 
@@ -143,8 +150,8 @@ def buscador_objeto(request):
             "success": True,
             "nft": functions.get_nft_data(nft),
             "transactions": transactions,
-            "crafting_details_by_level": functions.get_crafting_details(nft),
-            "craftingInverse_details": functions.get_inverse_crafting_details(nft),
+            "crafting_details_by_level": functions.get_crafting_details(nft,data),
+            "craftingInverse_details": functions.get_inverse_crafting_details(nft,data),
             "holders": holders,
         }
 
@@ -193,3 +200,4 @@ def inventory(request):
 
 def tracker(request):
     return render(request, 'tracker.html')
+

@@ -272,77 +272,14 @@ def extract_nft_info(nft_data):
             info = nft["account"]["data"]["parsed"]["info"]
             mint = info["mint"]
             amount = info["tokenAmount"]["amount"]
-            decimals = info["tokenAmount"]["decimals"]
 
             uri_data = get_nft_metadata(mint)  # Obtener URI de la metadata
             uri = uri_data.get("uri", "No URI found")
-            category_value = '';
-            type_value = '';
             if "valannia" in uri.lower():
                 metadata = obtener_json_desde_uri(uri)  # Obtener datos del JSON
                 if amount != '0':
-                    nombreBd = Objects.objects.filter(name=metadata['name']).first()
-                    if nombreBd:
-                        if nombreBd.mint == '0':
-                            nombreBd.mint = mint
-                            nombreBd.uri = uri
-                            nombreBd.save() 
-                            print(f"objti creadoPPP: {metadata['name']}")
-                        else:
-                            print(f"objti existente: {metadata['name']}")
-                    else:
-                
-                        if 'attributes' in metadata:
-                            for atributo in metadata['attributes']:
-                                if atributo['trait_type'] == 'category':
-                                    category_value = atributo['value']
-                                elif atributo['trait_type'] == 'type':
-                                    type_value = atributo['value']
-
-                            
-                            if category_value != '' and type_value != '':
-                                response = requests.get(metadata["image"])
-                                final = '';
-                            # Verificamos que la solicitud fue exitosa
-                                if response.status_code == 200:
-                                    # Convertimos el contenido de la imagen a un archivo que Django puede manejar
-                                    image_content = ContentFile(response.content)                                
-                                    # Subimos la imagen a Cloudinary
-                                    upload_result = cloudinary.uploader.upload(image_content, folder='objects')
-
-                                    final = upload_result['secure_url']
-
-                                object_category, _ = ObjectCategorys.objects.get_or_create(name=category_value)
-                                object_type, _ = ObjectTypes.objects.get_or_create(name=type_value)
-                                Objects.objects.create(
-                                    name=metadata['name'], 
-                                    description=metadata['description'], 
-                                    objectType=object_type, 
-                                    objectCategory=object_category,
-                                    image= final,
-                                    mint=mint,
-                                    uri=uri,
-                                    nftImage=metadata['image'],
-                                    supply=int(amount))
-                                print(f"objti creado: {metadata['name']}")   
-                            else:
-                                print(f"no: {metadata['name']}")    
-
-                             
-                                
-                                # Realiza la acción que corresponde cuando tiene 'attributes'
-                        else:
-                            print("Este JSON NO tiene 'attributes'.")
-                        
-
-                    nft_list.append({
-                        "mint": mint,
-                        "amount": amount,
-                        "decimals": decimals,
-                        "name": metadata['name'],
-                        "image": metadata['image'],
-                        "metadata" : metadata
-                    })
+                    nameObject = metadata['name']                                                           
+                    nft_list.append({'name':nameObject, 'amount': amount})
         except KeyError:
             continue  # Si falta alguna clave, simplemente lo ignora
 

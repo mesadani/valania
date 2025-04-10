@@ -7,6 +7,7 @@
 </div>
 <!-- Buscador de objetos -->
 <div class="search-container">
+    <input type="text" id="wallet" placeholder="Ingresa dirección de wallet">
     <input type="text" id="search-input" placeholder="Buscar objeto...">
     <button onclick="searchObject()">🔍 Buscar</button>
 </div>
@@ -27,6 +28,7 @@
         <p><strong>Tiempo de Creación:</strong> <span id="time"></span> segundos</p>
         <p><strong>Url Market:</strong> <span id="urlMarket"></span> </p>
         <p><strong>Supply:</strong> <span id="supply"></span> </p>
+        <p><strong>HAVE IN WALLET:</strong> <span id="have"></span> </p>
     </div>
 
     <!-- Contenedor de pestañas -->
@@ -231,6 +233,53 @@
         background-color: gold;
         color: black;
     }
+    .search-container input[type="text"] {
+        width: calc(50% - 10px);
+        padding: 10px;
+        margin: 5px;
+        border: 2px solid gold;
+        border-radius: 10px;
+        background-color: rgba(255, 255, 255, 0.8);
+        font-family: 'MedievalSharp', cursive;
+        font-size: 16px;
+        color: black;
+        box-shadow: 0px 0px 10px gold;
+        transition: all 0.3s ease;
+    }
+
+    .search-container input[type="text"]:focus {
+        outline: none;
+        border-color: #d4af37;
+        box-shadow: 0px 0px 15px #d4af37;
+    }
+
+    .search-container button {
+        padding: 10px 20px;
+        margin: 5px;
+        border: none;
+        border-radius: 10px;
+        background-color: gold;
+        font-family: 'MedievalSharp', cursive;
+        font-size: 18px;
+        color: black;
+        cursor: pointer;
+        box-shadow: 0px 0px 10px gold;
+        transition: all 0.3s ease;
+    }
+
+    .search-container button:hover {
+        background-color: #d4af37;
+        box-shadow: 0px 0px 15px #d4af37;
+    }
+    a{
+        color: gold;
+        text-decoration: underline;
+        transition: color 0.3s ease-in-out;
+    }
+    a:hover{
+        color: #d4af37;
+    }
+    
 </style>
 
 <!-- Script de Tabs y Buscador -->
@@ -263,6 +312,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Función para realizar la búsqueda
 // Función para realizar la búsqueda
     function searchObject(objectName) {
+        wallet = $('#wallet').val();
         // Si no se pasa un nombre, buscamos por el valor del campo de entrada
         let query = objectName || document.getElementById('search-input').value;
 
@@ -274,7 +324,7 @@ document.addEventListener('DOMContentLoaded', function () {
         fetch(`/buscador_objeto/`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ q: query })
+            body: JSON.stringify({ q: query, wallet : wallet})
         })
         .then(response => response.json())
         .then(data => {
@@ -304,7 +354,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById("profession").innerHTML = `<a href="${data.crafting_details_by_level[0].urlPorfession}" target="_blank">${data.crafting_details_by_level[0].profesion}</a>`;
         document.getElementById("urlMarket").innerHTML = `<a href="${data.crafting_details_by_level[0].urlMarket}" target="_blank">${data.crafting_details_by_level[0].urlMarket}</a>`;
         document.getElementById("supply").innerText = data.crafting_details_by_level[0].supply;
-
+        document.getElementById("have").innerText = data.crafting_details_by_level[0].have;
         // Actualizar Requisitos
         let reqList = document.getElementById("requirements-list");
         reqList.innerHTML = "";
@@ -312,7 +362,7 @@ document.addEventListener('DOMContentLoaded', function () {
             reqList.innerHTML += `
                 <li>
                     <img onclick="searchObject('${req.name}')" src="${req.image}" alt="" class="req-image"  style="cursor: pointer;">
-                    ⚒ ${req.name} - Cantidad: ${req.quantity}
+                    ⚒ ${req.name} - Cantidad: ${req.quantity}  HAVE: ${req.have}
                 </li>
             `;
         });

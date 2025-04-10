@@ -39,17 +39,20 @@ def get_nft_data(nft):
     }
 
 
-def get_crafting_details(nft):
+def get_crafting_details(nft,data):
     try:
         crafting = Crafting.objects.select_related('object__objectType', 'object__objectCategory', 'proffesion').get(object=nft.id)
 
         requirements = craftingRequirements.objects.select_related('object').filter(craft=crafting)
+        have = 0
+        data_dict = {item['name']: item['amount'] for item in data}
 
         requirements_list = [{
             'id': req.object.id,
             'name': req.object.name,
             'quantity': req.quantity,
-            'image': req.object.image.url if req.object.image else ''
+            'image': req.object.image.url if req.object.image else '',
+            'have': data_dict.get(req.object.name, 0)
         } for req in requirements]
 
         type_slug = crafting.object.objectType.name.replace(" ", "-").lower()
@@ -58,6 +61,14 @@ def get_crafting_details(nft):
         market_url = f'https://market.valannia.com/market/{crafting.object.objectCategory.name}?type={type_slug}&kind={kind_slug}'
         profession_url = f'https://market.valannia.com/realms/professions/{crafting.proffesion.name.lower().replace(" ", "-")}'
 
+        have = 0
+
+# Iterar sobre la lista de datos para encontrar el objeto
+        for item in data:
+            if crafting.object.name == item['name']:
+                have = item['amount']
+                break 
+            
         return [{
             'crafting_name': crafting.object.name,
             'level': crafting.level,
@@ -69,16 +80,17 @@ def get_crafting_details(nft):
             'urlPorfession': profession_url,
             'supply': crafting.object.supply,
             'image': crafting.object.image.url if crafting.object.image else '',
-            'requirements': requirements_list
+            'requirements': requirements_list,
+            'have': have,
         }]
     except Crafting.DoesNotExist:
         return []
 
-def get_inverse_crafting_details(nft):
+def get_inverse_crafting_details(nft,data):
     inverse_reqs = craftingRequirements.objects.filter(object=nft.id).select_related(
         'craft__object', 'craft__proffesion'
     )
-
+    data_dict = {item['name']: item['amount'] for item in data}
     return [{
         'id': req.craft.object.id,
         'crafting_name': req.craft.object.name,
@@ -88,4 +100,5 @@ def get_inverse_crafting_details(nft):
         'time': req.craft.time,
         'image': req.craft.object.image.url if req.craft.object.image else '',
         'profesion': req.craft.proffesion.name,
+        'have': data_dict.get(req.craft.object.name, 0)
     } for req in inverse_reqs]

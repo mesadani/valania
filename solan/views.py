@@ -73,6 +73,29 @@ def wallet_info(request):
     return JsonResponse({"error": "Invalid request method. Use POST."}, status=405)
 
 
+def wallet_info_nft(wallet_address):
+    """
+    Endpoint para obtener saldo y NFTs de una wallet Phantom.
+    """
+
+    try:
+        # Deserializar el JSON recibido en el cuerpo de la solicitud
+       
+        if not wallet_address:
+            return JsonResponse({"error": "Wallet address is required"}, status=400)
+        
+        nfts = get_nfts(wallet_address)
+        
+        data = extract_nft_info({"nfts": nfts})
+        return JsonResponse({"nfts": data, "data": data})
+
+    except json.JSONDecodeError as e:
+        return JsonResponse({"error": f"Invalid JSON format: {str(e)}"}, status=400)
+    except Exception as e:
+        return JsonResponse({"error": f"Internal Server Error: {str(e)}"}, status=500)
+
+    return JsonResponse({"error": "Invalid request method. Use POST."}, status=405)
+
 
 @csrf_exempt
 def wallet_info_extend(request):

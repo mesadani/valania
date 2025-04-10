@@ -136,7 +136,7 @@ def importacionValania():
     for nft in nfts:
         print(nft)
       
-    data =  phantom_wallet.extract_nft_info({"nfts": nfts})
+    data =  phantom_wallet.extract_nft_info_extends({"nfts": nfts})
 
 
 
