@@ -3,14 +3,17 @@
 {% block content %}
 
 <!-- Filtro de razas -->
+
+
+<!-- Filtro de razas -->
 <div class="filters-wrapper">
     <!-- Filtro de razas -->
     <div class="races-menu">
-        <div class="race-item" onclick="filterUnits('all', selectedRarity, this)">
+        <div class="race-item" onclick="filterUnits('all', selectedRarity, selectedTroopPoints)" data-id="all">
             <span>All Races</span>
         </div>
         {% for race in races %}
-        <div class="race-item" onclick="filterUnits('{{ race.id }}', selectedRarity, this)">
+        <div class="race-item" onclick="filterUnits('{{ race.id }}', selectedRarity, selectedTroopPoints)" data-id="{{ race.id }}">
             <img src="{{ race.image.url }}" alt="{{ race.name }}" class="race-image">
             <span>{{ race.name }}</span>
         </div>
@@ -19,21 +22,23 @@
 
     <!-- Filtro de rarezas -->
     <div class="rarities-menu">
-        <div class="rare-item" onclick="filterUnits(selectedRace, 'all', this, true)">
+        <div class="rare-item" onclick="filterUnits(selectedRace, 'all', selectedTroopPoints)" data-id="all">
             <span>All Rarities</span>
         </div>
         {% for rare in rarities %}
-        <div class="rare-item" onclick="filterUnits(selectedRace, '{{ rare.id }}', this, true)">
+        <div class="rare-item" onclick="filterUnits(selectedRace, '{{ rare.id }}', selectedTroopPoints)" data-id="{{ rare.id }}">
             <span>{{ rare.name }}</span>
         </div>
         {% endfor %}
     </div>
+
+    <!-- Filtro de Troop Points -->
     <div class="trooppoints-menu">
-        <div class="troop-item" onclick="filterUnits(selectedRace, selectedRarity, 'all')">
+        <div class="troop-item" onclick="filterUnits(selectedRace, selectedRarity, 'all')" data-id="all">
             <span>All Troop Points</span>
         </div>
         {% for tp in troopPoints %}
-        <div class="troop-item" onclick="filterUnits(selectedRace, selectedRarity, '{{ tp }}')">
+        <div class="troop-item" onclick="filterUnits(selectedRace, selectedRarity, '{{ tp }}')" data-id="{{ tp }}">
             <span>{{ tp }}</span>
         </div>
         {% endfor %}
@@ -44,7 +49,6 @@
 <div class="heroes-container">
     {% for combatUnit in combatUnits %}
     <div class="hero-card" data-race-id="{{ combatUnit.race.id }}" data-rarity-id="{{ combatUnit.rarity.id }}" data-troop-points="{{ combatUnit.troopPoints }}">
-
         <div class="hero-image-container">
             <img src="{{ combatUnit.image.url }}" alt="{{ combatUnit.name }}" class="hero-image">
         </div>
@@ -62,24 +66,27 @@
     </div>
     {% endfor %}
 </div>
-
 <!-- Script de Filtro -->
 <script>
-      let selectedRace = 'all';
+    let selectedRace = 'all';
     let selectedRarity = 'all';
     let selectedTroopPoints = 'all';
 
-    function filterUnits(raceId, rarityId, troopPoints = selectedTroopPoints) {
+    // Función de filtrado unificado
+    function filterUnits(raceId, rarityId, troopPoints) {
+        // Actualizamos las variables de los filtros
         selectedRace = raceId;
         selectedRarity = rarityId;
         selectedTroopPoints = troopPoints;
 
+        // Seleccionar todas las tarjetas de héroes
         const heroCards = document.querySelectorAll('.hero-card');
         heroCards.forEach(card => {
             const matchesRace = (card.getAttribute('data-race-id') === raceId || raceId === 'all');
             const matchesRarity = (card.getAttribute('data-rarity-id') === rarityId || rarityId === 'all');
             const matchesTP = (card.getAttribute('data-troop-points') === troopPoints || troopPoints === 'all');
 
+            // Mostrar u ocultar la tarjeta según los filtros
             if (matchesRace && matchesRarity && matchesTP) {
                 card.style.display = 'flex';
             } else {
@@ -87,44 +94,54 @@
             }
         });
 
-        updateFilterStyles();
+        updateFilterStyles(); // Actualizar estilos de selección
     }
 
+    // Función para actualizar los estilos de los filtros seleccionados
     function updateFilterStyles() {
+        // Raza
         document.querySelectorAll('.race-item').forEach(el => {
-            el.classList.toggle('selected', el.textContent.trim() === selectedRace || selectedRace === 'all' && el.textContent.includes('All Races'));
-        });
-        document.querySelectorAll('.rare-item').forEach(el => {
-            el.classList.toggle('selected', el.textContent.trim() === selectedRarity || selectedRarity === 'all' && el.textContent.includes('All Rarities'));
-        });
-        document.querySelectorAll('.troop-item').forEach(el => {
-            el.classList.toggle('selected', el.textContent.trim() === selectedTroopPoints || selectedTroopPoints === 'all' && el.textContent.includes('All Troop Points'));
-        });
-    }
-    function filterByRace(raceId) {
-        const heroCards = document.querySelectorAll('.hero-card');
-        heroCards.forEach(card => {
-            if (card.getAttribute('data-race-id') === raceId || raceId === 'all') {
-                card.style.display = 'flex';
+            if (selectedRace === 'all' && el.textContent.trim().includes('All Races')) {
+                el.classList.add('selected');
+            } else if (el.textContent.trim() === document.querySelector(`.race-item[data-id='${selectedRace}']`)?.textContent.trim()) {
+                el.classList.add('selected');
             } else {
-                card.style.display = 'none';
+                el.classList.remove('selected');
             }
         });
-    }
-    function filterByRarity(rarityId) {
-        const heroCards = document.querySelectorAll('.hero-card');
-        heroCards.forEach(card => {
-            if (card.getAttribute('data-rarity-id') === rarityId || rarityId === 'all') {
-                card.style.display = 'flex';
+
+        // Rareza
+        document.querySelectorAll('.rare-item').forEach(el => {
+            if (selectedRarity === 'all' && el.textContent.trim().includes('All Rarities')) {
+                el.classList.add('selected');
+            } else if (el.textContent.trim() === document.querySelector(`.rare-item[data-id='${selectedRarity}']`)?.textContent.trim()) {
+                el.classList.add('selected');
             } else {
-                card.style.display = 'none';
+                el.classList.remove('selected');
+            }
+        });
+
+        // Puntos de Troopa
+        document.querySelectorAll('.troop-item').forEach(el => {
+            if (selectedTroopPoints === 'all' && el.textContent.trim().includes('All Troop Points')) {
+                el.classList.add('selected');
+            } else if (el.textContent.trim() === selectedTroopPoints) {
+                el.classList.add('selected');
+            } else {
+                el.classList.remove('selected');
             }
         });
     }
 </script>
 
+
+
 <!-- Estilos Mejorados -->
 <style>
+    .selected {
+    background: #e67e22 !important;
+    font-weight: bold;
+}
     .trooppoints-menu {
     display: flex;
     justify-content: center;
