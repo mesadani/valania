@@ -17,17 +17,21 @@
 
     <!-- Información del Objeto (Fija) -->
     <div class="info-section">
-        <h2>Item Information</h2>
-        <img src="" id="object-image" class="object-image" alt="">
-        <p><strong>Name:</strong> <span id="crafting_name"></span></p>
-        <p><strong>Profession:</strong> <span id="profession"></span></p>
-        <p><strong>Level:</strong> <span id="level"></span></p>
-        <p><strong>Amount:</strong> <span id="quantity"></span></p>
-        <p><strong>Probability:</strong> <span id="probability"></span>%</p>
-        <p><strong>Creation Time:</strong> <span id="time"></span> seconds</p>
-        <p><strong>Url Market:</strong> <span id="urlMarket"></span> </p>
-        <p><strong>Supply:</strong> <span id="supply"></span> </p>
-        <p><strong>HAVE IN WALLET:</strong> <span id="have"></span> </p>
+        <h1 id="crafting_name" class="object-title"></h1>
+        <div class="object-details">
+            <img src="" id="object-image" class="object-image" alt="">
+            <div class="object-description">
+                <p><strong>Description:</strong></p> <span id="description"></span> <!-- Nuevo campo de descripción -->
+                <p><strong>Profession:</strong> <span id="profession"></span>
+                <p><strong>Level:</strong> <span id="level"></span></p>
+                <p><strong>Amount:</strong> <span id="quantity"></span></p>
+                <p><strong>Probability:</strong> <span id="probability"></span>%</p>
+                <p><strong>Creation Time:</strong> <span id="time"></span> seconds</p>
+                <p><strong>Url Market:</strong> <span id="urlMarket"></span> </p>
+                <p><strong>Supply:</strong> <span id="supply"></span> </p>
+                <p><strong>HAVE IN WALLET:</strong> <span id="have"></span> </p>
+            </div>
+        </div>
     </div>
 
     <!-- Contenedor de pestañas -->
@@ -36,6 +40,7 @@
         <button class="tab-button" onclick="openTab(event, 'extra')">📜 Items to craft:</button>
         <button class="tab-button" onclick="openTab(event, 'transactions')">📜 Transactions</button>
         <button class="tab-button" onclick="openTab(event, 'holders')">📜 Top Holders</button>
+        <button class="tab-button" onclick="openTab(event, 'prices')">📜 Market Pices</button>
     </div>
 
     <!-- Contenido de pestañas -->
@@ -75,6 +80,20 @@
             <thead>
                 <tr>
                     <th>Owner</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Aquí se llenarán las transacciones con JavaScript -->
+            </tbody>
+        </table>
+    </div>
+    <div id="prices" class="tab-content">
+        <h2>Transactions</h2>
+        <table id="prices-table">
+            <thead>
+                <tr>
+                    <th>Price</th>
                     <th>Amount</th>
                 </tr>
             </thead>
@@ -278,7 +297,45 @@
     a:hover{
         color: #d4af37;
     }
-    
+    .info-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 10px;
+    border: 3px solid gold;
+    margin-bottom: 20px;
+}
+
+.object-title {
+    font-size: 32px;
+    margin-bottom: 10px;
+    color: gold;
+    text-shadow: 2px 2px 5px black;
+}
+
+.object-details {
+    display: flex;
+    align-items: flex-start;
+}
+
+.object-image {
+    width: 300px;
+    max-width: 100%;
+    border: 2px solid gold;
+    border-radius: 10px;
+    margin-right: 20px;
+}
+
+.object-description {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    color: white;
+}
+
+
 </style>
 
 <!-- Script de Tabs y Buscador -->
@@ -344,8 +401,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // Función para actualizar los datos de la página
     function actualizarPagina(data) {
         // Actualizar Información
-        document.getElementById("object-image").src = data.crafting_details_by_level[0].image;
-        document.getElementById("crafting_name").innerText = data.crafting_details_by_level[0].crafting_name;
+        document.getElementById("object-image").src = data.nft.image;
+        document.getElementById("crafting_name").innerText = data.nft.name;
+        document.getElementById("description").innerText = data.nft.description;
         document.getElementById("level").innerText = data.crafting_details_by_level[0].level;
         document.getElementById("quantity").innerText = data.crafting_details_by_level[0].quantity;
         document.getElementById("probability").innerText = data.crafting_details_by_level[0].probability;
@@ -400,6 +458,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 <tr>
                     <td>${hol.owner}</td>
                     <td>${hol.amount}</td>
+                </tr>
+            `;
+        });
+
+                // Actualizar Holders
+        let prices = document.getElementById("prices-table").getElementsByTagName('tbody')[0];
+        prices.innerHTML = "";
+        data.prices.forEach(pric => {
+            prices.innerHTML += `
+                <tr>
+                    <td>${pric.price}</td>
+                    <td>${pric.amount}</td>
                 </tr>
             `;
         });

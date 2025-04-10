@@ -102,3 +102,7 @@ def get_inverse_crafting_details(nft,data):
         'profesion': req.craft.proffesion.name,
         'have': data_dict.get(req.craft.object.name, 0)
     } for req in inverse_reqs]
+
+
+
+

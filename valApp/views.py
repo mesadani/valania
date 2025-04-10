@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse,JsonResponse
 # Create your views here.
 from .models import Professions, Heroes, Races, Crafting, craftingRequirements, CombatUnits,Rarities, Objects
-from solan.service.phantom_wallet import get_nft_transactions, get_nfts, extract_nft_info
+from solan.service.phantom_wallet import get_nft_transactions, get_nfts, extract_nft_info, getMarketPrices
 import json
 from django.views.decorators.csrf import csrf_exempt
 from .funciones import functions
@@ -151,6 +151,12 @@ def buscador_objeto(request):
         transactions = get_nft_transactions(nft.mint, 5) if nft.mint != '0' else []
         holders = functions.getMaxSupply(nft.mint) if nft.mint != '0' else []
 
+
+
+        # precios
+
+        prices = getMarketPrices(nft.objectCategory.name,nft.objectType.name,nft.name)
+
         response_data = {
             "success": True,
             "nft": functions.get_nft_data(nft),
@@ -158,6 +164,8 @@ def buscador_objeto(request):
             "crafting_details_by_level": functions.get_crafting_details(nft,data),
             "craftingInverse_details": functions.get_inverse_crafting_details(nft,data),
             "holders": holders,
+            "prices" : prices
+
         }
 
         return JsonResponse(response_data)
