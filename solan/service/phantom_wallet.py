@@ -6,7 +6,7 @@ from solana.rpc.api import Client  # Este es el cliente para interactuar con Sol
 from solders.pubkey import Pubkey
 from valApp.models import Objects, ObjectCategorys, ObjectTypes
 from django.core.files.base import ContentFile
-
+from django.db import transaction
 import cloudinary.uploader
 SOLANA_API_URL = "https://rpc.helius.xyz/?api-key=a3d88e42-62d1-4f91-b43d-a316f334fc45"
 client = Client(SOLANA_API_URL)
@@ -347,7 +347,6 @@ def extract_nft_info(nft_data):
             continue  # Si falta alguna clave, simplemente lo ignora
 
     return nft_list
-
 def obtener_json_desde_uri(uri):
     """
     Descarga el JSON desde la URI y devuelve su contenido.
@@ -358,3 +357,115 @@ def obtener_json_desde_uri(uri):
         return response.json()  # Convertimos la respuesta en un diccionario
     except requests.exceptions.RequestException as e:
         return {"error": f"No se pudo obtener el JSON: {str(e)}"}
+
+
+
+def get_or_create_object_category_and_type(metadata):
+    """Obtiene o crea una categoría y tipo de objeto"""
+    category_value = ''
+    type_value = ''
+    if 'attributes' in metadata:
+        for atributo in metadata['attributes']:
+            if atributo['trait_type'] == 'category':
+                category_value = atributo['value']
+            elif atributo['trait_type'] == 'type':
+                type_value = atributo['value']
+    return category_value, type_value
+
+
+def upload_image_from_url(image_url):
+    """Descarga y sube la imagen a Cloudinary, devuelve la URL segura"""
+    response = requests.get(image_url)
+    if response.status_code == 200:
+        image_content = ContentFile(response.content)
+        upload_result = cloudinary.uploader.upload(image_content, folder='objects')
+        return upload_result['secure_url']
+    return None
+
+def getInfoNft(metadata, mint, uri, amount):
+    return {
+                "mint": mint,
+                "amount": amount,
+                "decimals": metadata.get("tokenAmount", {}).get("decimals", 0),
+                "name": metadata['name'],
+                "image": metadata['image'],
+                #"metadata": metadata
+            }
+def create_or_update_object(metadata, mint, uri, amount):
+    """Crea o actualiza un objeto en la base de datos"""
+    category_value, type_value = get_or_create_object_category_and_type(metadata)
+
+    if category_value and type_value:
+        final_image_url = upload_image_from_url(metadata["image"])
+
+        # Usar `get_or_create` de manera eficiente con las relaciones
+        object_category, _ = ObjectCategorys.objects.get_or_create(name=category_value)
+        object_type, _ = ObjectTypes.objects.get_or_create(name=type_value)
+
+        # Usamos `select_related` para evitar consultas adicionales
+        existing_object = Objects.objects.select_related('objectType', 'objectCategory').filter(name=metadata['name']).first()
+
+        if amount != '0':
+            if existing_object:
+                if existing_object.mint == '0':
+                    # Actualizamos el objeto existente
+                    existing_object.mint = mint
+                    existing_object.uri = uri
+                    existing_object.save()
+                    print(f"objti actualizado: {metadata['name']}")
+                else:
+                    print(f"objti ya existe: {metadata['name']}")
+            else:
+                # Si no existe el objeto, lo creamos
+                new_object = Objects.objects.create(
+                    name=metadata['name'],
+                    description=metadata['description'],
+                    objectType=object_type,
+                    objectCategory=object_category,
+                    image=final_image_url,
+                    mint=mint,
+                    uri=uri,
+                    nftImage=metadata['image'],
+                    supply=int(amount)
+                )
+                print(f"objti creado: {metadata['name']}")
+
+            return {
+                "mint": mint,
+                "amount": amount,
+                "decimals": metadata.get("tokenAmount", {}).get("decimals", 0),
+                "name": metadata['name'],
+                "image": metadata['image'],
+                "metadata": metadata
+            }
+    else:
+        print(f"no: {metadata['name']}")
+    return None
+
+
+@transaction.atomic  # Usamos transacciones para garantizar la integridad de las operaciones
+def extract_nft_info_extends(nft_data):
+    nft_list = []
+
+    for nft in nft_data.get("nfts", []):  # Recorre la lista de NFTs
+        try:
+            info = nft["account"]["data"]["parsed"]["info"]
+            mint = info["mint"]
+            amount = info["tokenAmount"]["amount"]
+            decimals = info["tokenAmount"]["decimals"]
+
+            uri_data = get_nft_metadata(mint)  # Obtener URI de la metadata
+            uri = uri_data.get("uri", "No URI found")
+
+            if "valannia" in uri.lower():
+                metadata = obtener_json_desde_uri(uri)  # Obtener datos del JSON
+                #nft_info = create_or_update_object(metadata, mint, uri, amount)
+                #if nft_info:
+                    #nft_list.append(nft_info)
+                nftInfo = getInfoNft(metadata, mint, uri, amount)
+                nft_list.append(nftInfo)
+        except KeyError as e:
+            print(f"Error de clave: {e}")  # Para depuración más detallada
+            continue  # Si falta alguna clave, simplemente lo ignora
+
+    return nft_list

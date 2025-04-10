@@ -11,5 +11,6 @@ urlpatterns = [
     path('buscador_objeto/', views.buscador_objeto, name='buscador_objeto'),
     path('search', views.search, name='search'),
     path('inventory', views.inventory, name='inventory'),
+    path('tracker', views.tracker, name='tracker'),
 
 ]

@@ -190,3 +190,6 @@ def profession_detail(request, profession_id):
 
 def inventory(request):
     return render(request, 'inventory.html')
+
+def tracker(request):
+    return render(request, 'tracker.html')
