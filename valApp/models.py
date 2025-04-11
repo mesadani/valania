@@ -213,3 +213,12 @@ class GuildMembers(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.name               
+
+class ObjectsBuyPrices(models.Model):
+    object = models.ForeignKey(Objects, on_delete=models.CASCADE)
+    price = models.FloatField() 
+    amount = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name 

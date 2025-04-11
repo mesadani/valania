@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse,JsonResponse
 # Create your views here.
-from .models import Professions, Heroes, Races, Crafting, craftingRequirements, CombatUnits,Rarities, Objects,Guilds,GuildMembers
+from .models import Professions, Heroes, Races, Crafting, craftingRequirements, CombatUnits,Rarities, Objects,Guilds,GuildMembers, ObjectCategorys, ObjectTypes,ObjectsPrices
 from solan.service.phantom_wallet import get_nft_transactions, get_nfts, extract_nft_info, getMarketPrices
 import json
 from django.views.decorators.csrf import csrf_exempt
@@ -9,6 +9,8 @@ from .funciones import functions
 from collections import defaultdict
 from deep_translator import GoogleTranslator
 from django.core.paginator import Paginator
+from django.db.models import Min
+from django.db.models import Max
 def index(request):
     title = 'Welcome to the Jungle !'
     professions = Professions.objects.all();
@@ -256,3 +258,36 @@ def players(request):
         'races': races,
         'professions': professions
     })
+
+
+from django.core.paginator import Paginator
+
+def market(request):
+    last_update = ObjectsPrices.objects.aggregate(last_update=Max('created_at'))['last_update']
+
+    print(f"Last update: {last_update}")
+    # Filtrar objetos que tienen precios asociados y ordenar por el created_at más reciente de ObjectsPrices
+    objects_with_prices = (
+        Objects.objects
+        .filter(objectsprices__isnull=False)
+        .annotate(min_created_at=Min('objectsprices__created_at'))
+        .order_by('min_created_at')
+        .select_related('objectCategory', 'objectType')
+        .prefetch_related('objectsprices_set')
+    )
+
+    # Configurar la paginación
+    paginator = Paginator(objects_with_prices, 100)  # Mostrar 10 objetos por página
+    page_number = request.GET.get('page')
+    page_objects = paginator.get_page(page_number)
+
+    categories = ObjectCategorys.objects.all()
+    types = ObjectTypes.objects.all()
+
+    return render(request, 'market.html', {
+        'objects': page_objects,
+        'categories': categories,
+        'types': types,
+        'last_update': last_update
+    })
+

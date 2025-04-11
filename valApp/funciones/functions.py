@@ -107,7 +107,9 @@ def get_inverse_crafting_details(nft,data):
 
 
 def actualizarPrecios():
-    reset_table_objects_prices(ObjectsPrices)
+    reset_table_objects_prices(ObjectsPrices,'valApp_objectsprices')
+    reset_table_objects_prices(ObjectsBuyPrices,'valApp_objectsbuyprices')
+
     for object in Objects.objects.all():
         prices = phantom_wallet.getMarketPrices(object.objectCategory.name, object.objectType.name, object.name)
 
@@ -124,20 +126,38 @@ def actualizarPrecios():
                         amount=amount
                     )
 
-def reset_table_objects_prices(model):
+        pricesBuy = phantom_wallet.getMarketActions(object.objectCategory.name, object.objectType.name, object.name)
+
+        if len(pricesBuy) > 0:
+            for price_buy_data in pricesBuy:
+                amount = price_buy_data['amount']
+                price = price_buy_data['price']
+
+                if amount and price:
+                # Create or update the ObjectsPrices entry
+                    obj_price = ObjectsBuyPrices.objects.create(
+                        object=object,
+                        price=price,
+                        amount=amount
+                    )
+                    
+
+from django.db import connection
+
+def reset_table_objects_prices(model, table_name):
     # Delete all data from the table
     model.objects.all().delete()
 
     # Reset the auto-increment field
     with connection.cursor() as cursor:
-        # Replace 'your_table_name' with the actual table name
-        # The SQL command varies depending on the database
+        # Use parameterized queries to prevent SQL injection
         if connection.vendor == 'sqlite':
-            cursor.execute("DELETE FROM sqlite_sequence WHERE name='valApp_objectsprices';")
+            cursor.execute("DELETE FROM sqlite_sequence WHERE name=%s;", [table_name])
         elif connection.vendor == 'postgresql':
-            cursor.execute("ALTER SEQUENCE valApp_objectsprices RESTART WITH 1;")
+            cursor.execute(f"ALTER SEQUENCE {table_name}_id_seq RESTART WITH 1;")
         elif connection.vendor == 'mysql':
-            cursor.execute("ALTER TABLE valApp_objectsprices AUTO_INCREMENT = 1;")
+            cursor.execute(f"ALTER TABLE {table_name} AUTO_INCREMENT = 1;")
+
 
 def importGuilds():
     guilds = phantom_wallet.getGuilds()

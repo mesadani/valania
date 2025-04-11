@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<header>
+    <h1>Market</h1>
+
+</header>
+<div class="last-update-info">
+    <medium>Last Update: {{ last_update|date:"d/m/Y h:i A" }}</medium>
+</div>
+<div class="filters-wrapper">
+    <input type="text" id="objectSearch" placeholder="Buscar Objetos..." class="filter-input">
+    <select id="categoryFilter" class="filter-select">
+        <option value="">Todas las Categorías</option>
+        {% for category in categories %}
+        <option value="{{ category.name }}">{{ category.name }}</option>
+        {% endfor %}
+    </select>
+    <select id="typeFilter" class="filter-select">
+        <option value="">Todos los Tipos</option>
+        {% for type in types %}
+        <option value="{{ type.name }}">{{ type.name }}</option>
+        {% endfor %}
+    </select>
+</div>
+<main>
+    <table>
+        <thead>
+            <tr>
+                <th>Image</th>
+                <th>Name</th>
+                <th>Prices</th>
+                <th>Go Market</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% load custom_filters %}
+            {% for object in objects %}
+            <tr data-category="{{ object.objectCategory.name }}" data-type="{{ object.objectType.name }}">
+                <td><img src="{{ object.image.url }}" alt="{{ object.name }}" width="50"></td>
+                <td>{{ object.name }}</td>
+                <td>
+                    {% with object.objectsprices_set.all|dictsort:"price" as sorted_prices %}
+                        {% for price in sorted_prices|slice:":3" %}
+                            <div>
+                                Cantidad: {{ price.amount }}, Precio: {{ price.price }}
+                        </div>
+                        {% endfor %}
+                        {% if sorted_prices|length > 3 %}
+                            <button class="toggle-more-prices">Ver más precios</button>
+                            <div class="more-prices" style="display: none;">
+                                {% for price in sorted_prices|slice:"3:" %}
+                                    <div>
+                                        Cantidad: {{ price.amount }}, Precio: {{ price.price }}
+                                        <a href="X" target="_blank">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </a>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+                </td>
+                <td>
+                    <a href="https://market.valannia.com/market/{{ object.objectCategory.name|replace_spaces|lower|urlencode }}?type={{ object.objectType.name|replace_spaces|lower|urlencode }}&kind={{ object.name|replace_spaces|lower|urlencode }}" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleButtons = document.querySelectorAll('.toggle-more-prices');
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const morePrices = this.nextElementSibling;
+            morePrices.style.display = morePrices.style.display === 'none' ? 'block' : 'none';
+            this.textContent = morePrices.style.display === 'none' ? 'Ver más precios' : 'Ocultar precios';
+        });
+    });
+
+    const objectSearch = document.getElementById('objectSearch');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const typeFilter = document.getElementById('typeFilter');
+
+    objectSearch.addEventListener('input', filterObjects);
+    categoryFilter.addEventListener('change', filterObjects);
+    typeFilter.addEventListener('change', filterObjects);
+
+    function filterObjects() {
+        const searchValue = objectSearch.value.toLowerCase();
+        const categoryValue = categoryFilter.value;
+        const typeValue = typeFilter.value;
+        const rows = document.querySelectorAll('tbody tr');
+
+        rows.forEach(row => {
+            const name = row.cells[1].textContent.toLowerCase();
+            const category = row.dataset.category.toLowerCase();
+            const type = row.dataset.type.toLowerCase();
+            const matchesSearch = name.includes(searchValue);
+            const matchesCategory = categoryValue === '' || category === categoryValue.toLowerCase();
+            const matchesType = typeValue === '' || type === typeValue.toLowerCase();
+
+            if (matchesSearch && matchesCategory && matchesType) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+});
+</script>
+
+<style>
+header {
+    padding: 20px;
+    background-color: #f4f7fa;
+    border-bottom: 1px solid #ddd;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 24px;
+    color: #34495e;
+}
+
+.last-update-info {
+    margin: 10px 0;
+    font-size: 12px;
+    color: #7f8c8d;
+    text-align: left;
+}
+
+.filters-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+}
+
+.filter-input, .filter-select {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.filter-input:focus, .filter-select:focus {
+    border-color: #1abc9c;
+    box-shadow: 0 0 5px rgba(26, 188, 156, 0.5);
+}
+
+table {
+    width: 90%;
+    margin: 20px auto;
+    border-collapse: collapse;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #34495e;
+    color: white;
+    font-weight: bold;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.more-prices {
+    margin-top: 10px;
+}
+
+.fas.fa-external-link-alt {
+    margin-left: 5px;
+    color: #1abc9c;
+    font-size: 12px;
+    transition: color 0.3s;
+}
+
+.fas.fa-external-link-alt:hover {
+    color: #16a085;
+}
+
+</style>
+
+{% endblock %}

@@ -195,7 +195,7 @@ def verificar_listado_nft(mint):
     else:
         print("❌ El NFT no está listado actualmente.")
 
-#functions.importMembersGuilds()        
+#functions.actualizarPrecios()        
 #verificar_listado_nft("6o4AZhaqmLuBrf8Sy8tGgTxZ5uPkcsbPiNTvCLbSA8NC")
 #importarDatos()
 #importacionValania()
