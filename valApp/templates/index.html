@@ -3,6 +3,41 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<h1>{{ title }}</h1>
-<p>Lorem ipsum dolor sit amet consectetur adipisicing elit...</p>
+<style>
+    .video-background {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 100vh; /* Ajusta la altura según tus necesidades */
+}
+
+.video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: translate(-50%, -50%);
+    z-index: -1; /* Asegura que el video esté detrás del contenido */
+}
+
+.content {
+    position: relative;
+    z-index: 1; /* Asegura que el contenido esté delante del video */
+    color: white; /* Ajusta el color del texto para que sea visible sobre el video */
+    padding: 20px;
+}
+
+</style>
+<div class="video-background">
+    <video class="object-cover w-full h-full custom-video" autoplay muted loop style="width: 100%; height: auto;;">
+        <source src="https://www.valannia.com/videos/v-realms-loop.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+</div>
+<div class="image-background">
+
+    <img src="/static/images/imageP.png" alt="Background Image" class="full-width-image" style="width: 100%;">
+</div>
 {% endblock %}
