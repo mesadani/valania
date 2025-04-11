@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<header>
+    <h1>Guilds</h1>
+    <input type="text" id="guildSearch" placeholder="Buscar Guilds...">
+    <input type="text" id="playerSearch" placeholder="Buscar Jugadores...">
+    <select id="raceFilter">
+        <option value="">Todas las Razas</option>
+        {% for race in races %}
+        <option value="{{ race.name }}">{{ race.name }}</option>
+        {% endfor %}
+    </select>
+</header>
+<main>
+    {% for guild in guilds %}
+    <div class="guild" data-race="{{ guild.race.name }}">
+        <h2>{{ guild.name }}</h2>
+        <img src="{{ guild.avatar }}" alt="{{ guild.name }} Avatar">
+        <p>Tag: {{ guild.tag }}</p>
+        <p>Description: {{ guild.description }}</p>
+        <p>Language: {{ guild.language }}</p>
+        <p>Members: {{ guild.members }}</p>
+        <p>Announcement: {{ guild.announce }}</p>
+        <p>Ranking: {{ guild.ranking }}</p>
+        <p>Race: {{ guild.race.name }}</p>
+        <p>USDC: {{ guild.usdc }}</p>
+        <div class="players">
+            <h3>Jugadores</h3>
+            {% for player in guild.guildmembers_set.all %}
+            <div class="player">
+                <p>Name: {{ player.name }}</p>
+                <p>Role UUID: {{ player.roleuuid }}</p>
+                <p>Address: {{ player.address }}</p>
+                <p>Points: {{ player.points }}</p>
+                <p>Artisan: {{ player.artisan }}</p>
+                <p>Alchemist: {{ player.alchemist }}</p>
+                <p>Architect: {{ player.architect }}</p>
+                <p>Blacksmith: {{ player.blacksmith }}</p>
+                <p>Engineer: {{ player.engineer }}</p>
+                <p>Explorer: {{ player.explorer }}</p>
+                <p>Jeweler: {{ player.jeweler }}</p>
+                <p>Miner: {{ player.miner }}</p>
+                <p>Profession: {% if player.profession %}{{ player.profession.name }}{% else %}None{% endif %}</p>
+                <p>Profession Mastery: {{ player.professionMastery }}</p>
+                <p>Ranking: {{ player.ranking }}</p>
+                <p>USDC: {{ player.usdc }}</p>
+                <p>Weekly Crafts: {{ player.weeklyCrafts }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const guildSearch = document.getElementById('guildSearch');
+    const playerSearch = document.getElementById('playerSearch');
+    const raceFilter = document.getElementById('raceFilter');
+
+    guildSearch.addEventListener('input', filterGuilds);
+    playerSearch.addEventListener('input', filterPlayers);
+    raceFilter.addEventListener('change', filterGuilds);
+
+    function filterGuilds() {
+        const searchValue = guildSearch.value.toLowerCase();
+        const raceValue = raceFilter.value;
+        const guilds = document.querySelectorAll('.guild');
+
+        guilds.forEach(guild => {
+            const name = guild.querySelector('h2').textContent.toLowerCase();
+            const race = guild.getAttribute('data-race');
+
+            if (name.includes(searchValue) && (raceValue === '' || race === raceValue)) {
+                guild.style.display = '';
+            } else {
+                guild.style.display = 'none';
+            }
+        });
+    }
+
+    function filterPlayers() {
+        const searchValue = playerSearch.value.toLowerCase();
+        const players = document.querySelectorAll('.player');
+
+        players.forEach(player => {
+            const name = player.querySelector('p').textContent.toLowerCase();
+
+            if (name.includes(searchValue)) {
+                player.style.display = '';
+            } else {
+                player.style.display = 'none';
+            }
+        });
+    }
+});
+</script>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #f4f4f4;
+    padding: 10px;
+    text-align: center;
+}
+
+header input, header select {
+    margin: 5px;
+    padding: 5px;
+}
+
+.guild {
+    border: 1px solid #ccc;
+    margin: 10px;
+    padding: 10px;
+}
+
+.guild img {
+    max-width: 100px;
+    height: auto;
+}
+
+.players {
+    margin-top: 10px;
+}
+
+.player {
+    border-top: 1px solid #ddd;
+    padding-top: 5px;
+    margin-top: 5px;
+}
+</style>
+
+{% endblock %}

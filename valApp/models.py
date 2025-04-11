@@ -185,20 +185,31 @@ class Guilds(models.Model):
         return self.name 
 
 class GuildMembers(models.Model):
-    idGuild = models.ForeignKey(Guilds, on_delete=models.CASCADE)
-    name = models.CharField(max_length=200)
-    kkey = models.CharField(max_length=200)
-    address = models.CharField(max_length=500)
-    uuidGuild = models.CharField(max_length=500)
-    points = models.IntegerField()
-    artisan = models.IntegerField()
-    alchemist = models.IntegerField()
-    architect = models.IntegerField()
-    blacksmith = models.IntegerField()
-    engineer = models.IntegerField()
-    explorer = models.IntegerField()
-    jeweler = models.IntegerField()
-    miner = models.IntegerField()
+    guild = models.ForeignKey(Guilds, on_delete=models.CASCADE,null=True)
+    race = models.ForeignKey(Races, on_delete=models.CASCADE,null=True)
+    name = models.CharField(max_length=200, null=True)
+    idRank = models.CharField(max_length=200, null=True)
+    uuid = models.CharField(max_length=200, null=True)
+    roleuuid=models.CharField(max_length=200, null=True)
+    address = models.CharField(max_length=500, null=True)
+    uuidGuild = models.CharField(max_length=500, null=True)
+    points = models.IntegerField(default=0)
+    artisan = models.IntegerField(default=0)
+    alchemist = models.IntegerField(default=0)
+    architect = models.IntegerField(default=0)
+    blacksmith = models.IntegerField(default=0)
+    engineer = models.IntegerField(default=0)
+    explorer = models.IntegerField(default=0)
+    jeweler = models.IntegerField(default=0)
+    miner = models.IntegerField(default=0)
+    avatar = models.CharField(max_length=200, null=True)
+    usdc = models.IntegerField(default=0)
+    ranking = models.IntegerField( null=True)
+    herokind = models.CharField(max_length=200, null=True) 
+    heroLvl = models.IntegerField( null=True)
+    profession = models.ForeignKey(Professions, on_delete=models.CASCADE, null=True)  # Permitir nulo
+    professionMastery = models.IntegerField(null=True)  # Permitir nulo
+    weeklyCrafts = models.IntegerField(null=True)  # Permitir nulo
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.name               

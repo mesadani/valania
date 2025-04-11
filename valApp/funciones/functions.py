@@ -156,31 +156,98 @@ def importGuilds():
             leader=guild.get("LeaderUUID"),
             ranking=guild.get("Ranking"),
             usdc=guild.get("USDC"))
-    
+
+def membersGuilds(members,guilda):
+    for member in members:
+            
+            race = Races.objects.get(name=member.get("race"))
+            gg, created = GuildMembers.objects.get_or_create(
+                address=member.get("address"),
+                defaults={
+                    'name': '',
+                    'idRank': member.get("id"),
+                    'points': member.get("points"),
+                    'artisan': member.get("artisan"),
+                    'alchemist': member.get("alchemist"),
+                    'architect': member.get("architect"),
+                    'blacksmith': member.get("blacksmith"),
+                    'engineer': member.get("engineer"),
+                    'explorer': member.get("explorer"),
+                    'jeweler': member.get("jeweler"),
+                    'miner': member.get("miner"),
+                    'uuidGuild': member.get("guild"),
+                    'guild': guilda,
+                    'race' :race    # asegurate que el campo se llame 'guild' y no 'idGuild'
+                }
+            ) 
 def importMembersGuilds():
     guilds = Guilds.objects.all()
     for guilda in guilds:
 
         
-        members = phantom_wallet.getMembersGuilds(guilda.uuid)
-        for member in members:
-            print(guilda)
-            race = Races.objects.get(name=member.get("race"))
-            gg = GuildMembers.objects.create(
-                name='',
-                kkey=member.get("id"),
-                address=member.get("address"),
-                points=member.get("points"),
-                artisan=member.get("artisan"),
-                alchemist=member.get("alchemist"),
-                architect=member.get("architect"),
-                blacksmith=member.get("blacksmith"),
-                engineer=member.get("engineer"),
-                explorer=member.get("explorer"),
-                jeweler=member.get("jeweler"),
-                miner=member.get("miner"),
-                uuidGuild = member.get("guild"),
-                idGuild = guilda)
+        members = phantom_wallet.getMembersGuildsRank(guilda.uuid)
+      
+        #memberGuild(members,guilda);
+            
+        membersGuild = phantom_wallet.getMembersGuilds(guilda.uuid)
+        
+        for memberGuild in membersGuild:
+      
+            
+            profession = memberGuild.get('Profession', '').strip()  # strip para limpiar espacios
+            prof = None
+            if profession:
+                if profession == 'Engineer':
+                    prof = 'Engineering'
+                elif profession == 'Explorer':
+                    prof = 'Exploration'
+                elif profession == 'Alchemist':
+                    prof = 'Alchemy'
+                elif profession == 'Architect':
+                    prof = 'Architecture'
+                elif profession == 'Jeweler':
+                    prof = 'Jewelry'
+                elif profession == 'Blacksmith':
+                    pro = 'Blacksmith'
+                elif profession == 'Miner':
+                    prof = 'Mining'
+                elif profession == 'Artisan':
+                    prof = 'Artisan'
+ 
+
+            if prof is not None:
+                print(f"Profesión encontrada: {prof}")
+                prof = Professions.objects.get(name=prof)  
+
+            hkind = memberGuild.get('HeroKind', '').strip()  # strip para limpiar espacios
+
+            if hkind:
+                heroKind = memberGuild['HeroKind']
+                heroLvl = memberGuild['HeroLevel']
+            else:
+                heroKind = ''
+                heroLvl = 0
+
+
+
+            gg, created = GuildMembers.objects.update_or_create(
+                address=memberGuild['Address'],
+                defaults={
+                    'name': memberGuild['Name'],
+                    'avatar': memberGuild['Avatar'],
+                    'usdc': memberGuild['USDC'],
+                    'ranking': memberGuild['Ranking'],
+                    'herokind': heroKind,
+                    'heroLvl': heroLvl,
+                    'profession': prof,
+                    'professionMastery': memberGuild.get('ProfessionMastery', 0),  # Usa get para evitar KeyError
+                    'weeklyCrafts': memberGuild.get('WeeklyCrafts', 0),  # Usa get para evitar KeyError              
+                }
+            )
+
+
+
+            
                 
         
 

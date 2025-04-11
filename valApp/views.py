@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse,JsonResponse
 # Create your views here.
-from .models import Professions, Heroes, Races, Crafting, craftingRequirements, CombatUnits,Rarities, Objects
+from .models import Professions, Heroes, Races, Crafting, craftingRequirements, CombatUnits,Rarities, Objects,Guilds
 from solan.service.phantom_wallet import get_nft_transactions, get_nfts, extract_nft_info, getMarketPrices
 import json
 from django.views.decorators.csrf import csrf_exempt
@@ -214,3 +214,7 @@ def inventory(request):
 def tracker(request):
     return render(request, 'tracker.html')
 
+def guilds(request):
+    guilds = Guilds.objects.all()
+    races = Races.objects.all()
+    return render(request, 'guilds.html', {'guilds': guilds, 'races': races})

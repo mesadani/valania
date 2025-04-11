@@ -1,0 +1,308 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<header>
+    <h1>Guilds</h1>
+    <input type="text" id="guildSearch" placeholder="Search Guilds...">
+    <input type="text" id="playerSearch" placeholder="Search Players...">
+    <select id="raceFilter">
+        <option value="">All races</option>
+        {% for race in races %}
+        <option value="{{ race.name }}">{{ race.name }}</option>
+        {% endfor %}
+    </select>
+</header>
+<main>
+    <table class="guilds-table">
+        <thead>
+            <tr>
+                <th>Image</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Members</th>
+                <th>Race</th>
+                <th>USDC</th>
+                <th>Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for guild in guilds %}
+            <tr class="guild-row" data-race="{{ guild.race.name }}">
+                <td><img src="{{ guild.avatar }}" alt="{{ guild.name }} Avatar" class="guild-avatar"></td>
+                <td>{{ guild.name }}</td>
+                <td>{{ guild.description }}</td>
+                <td>{{ guild.members }}</td>
+                <td>{{ guild.race.name }}</td>
+                <td>{{ guild.usdc }}</td>
+                <td><button class="toggle-players">View Players</button></td>
+            </tr>
+            <tr class="players-row" style="display: none;">
+                <td colspan="7">
+                    <div class="players-container">
+                        <table class="players-table">
+                            <thead>
+                                <tr>
+                                    <th style="max-width: 150px;">Name</th>
+                                    <th style="max-width: 150px;">Address</th>
+                                    <th class="sortable" data-column="points">Points</th>
+                                    <th class="sortable" data-column="artisan">Artisan</th>
+                                    <th class="sortable" data-column="alchemist">Alchemist</th>
+                                    <th class="sortable" data-column="architect">Architect</th>
+                                    <th class="sortable" data-column="blacksmith">Blacksmith</th>
+                                    <th class="sortable" data-column="engineer">Engineer</th>
+                                    <th class="sortable" data-column="explorer">Explorer</th>
+                                    <th class="sortable" data-column="jeweler">Jeweler</th>
+                                    <th class="sortable" data-column="miner">Miner</th>
+                                    <th style="max-width: 100px;">Profession</th>
+                                    <th class="sortable" data-column="professionMastery">Profession Mastery</th>
+                                    <th class="sortable" data-column="ranking">Ranking</th>
+                                    <th class="sortable" data-column="usdc">USDC</th>
+                                    <th class="sortable" data-column="weeklyCrafts">Weekly Crafts</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for player in guild.guildmembers_set.all %}
+                                <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                    {% if player.name %}
+                                        <button class="copy-btn" data-clipboard-text="{{ player.name }}">📋</button>
+                                        {{ player.name }}
+                                    {% endif %}
+                                </td>
+                                <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                    {% if player.address %}
+                                        <button class="copy-btn" data-clipboard-text="{{ player.address }}">📋</button>
+                                        {{ player.address }}
+                                    {% endif %}
+                                </td>
+                                
+                                    <td>{{ player.points }}</td>
+                                    <td>{{ player.artisan }}</td>
+                                    <td>{{ player.alchemist }}</td>
+                                    <td>{{ player.architect }}</td>
+                                    <td>{{ player.blacksmith }}</td>
+                                    <td>{{ player.engineer }}</td>
+                                    <td>{{ player.explorer }}</td>
+                                    <td>{{ player.jeweler }}</td>
+                                    <td>{{ player.miner }}</td>
+                                    <td>{% if player.profession %}{{ player.profession.name }}{% else %}None{% endif %}</td>
+                                    <td>{{ player.professionMastery }}</td>
+                                    <td>{{ player.ranking }}</td>
+                                    <td>{{ player.usdc }}</td>
+                                    <td>{{ player.weeklyCrafts }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div id="notification" class="notification" style="display: none;"></div>
+
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    
+
+    const sortableHeaders = document.querySelectorAll('.sortable');
+    sortableHeaders.forEach(header => {
+        header.addEventListener('click', function() {
+            const column = this.getAttribute('data-column');
+            const tableBody = this.closest('table').querySelector('tbody');
+            const rows = Array.from(tableBody.querySelectorAll('tr'));
+            const isAscending = this.classList.toggle('asc');
+
+            rows.sort((a, b) => {
+                const aText = a.querySelector(`td:nth-child(${this.cellIndex + 1})`).textContent.trim();
+                const bText = b.querySelector(`td:nth-child(${this.cellIndex + 1})`).textContent.trim();
+                const aValue = isNaN(aText) ? aText : parseFloat(aText);
+                const bValue = isNaN(bText) ? bText : parseFloat(bText);
+
+                return isAscending ? aValue - bValue : bValue - aValue;
+            });
+
+            rows.forEach(row => tableBody.appendChild(row));
+        });
+    });
+
+
+
+    const toggleButtons = document.querySelectorAll('.toggle-players');
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const playersRow = this.closest('tr').nextElementSibling;
+            if (playersRow && playersRow.classList.contains('players-row')) {
+                playersRow.style.display = playersRow.style.display === 'none' ? 'table-row' : 'none';
+                this.textContent = playersRow.style.display === 'none' ? 'Ver Jugadores' : 'Ocultar Jugadores';
+            }
+        });
+    });
+
+    const copyButtons = document.querySelectorAll('.copy-btn');
+    copyButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const textToCopy = this.getAttribute('data-clipboard-text');
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showNotification('Texto copiado al portapapeles');
+            }).catch(err => {
+                console.error('Error al copiar al portapapeles: ', err);
+            });
+        });
+    });
+
+    const guildSearch = document.getElementById('guildSearch');
+    const playerSearch = document.getElementById('playerSearch');
+    const raceFilter = document.getElementById('raceFilter');
+
+    guildSearch.addEventListener('input', filterGuilds);
+    playerSearch.addEventListener('input', filterPlayers);
+    raceFilter.addEventListener('change', filterGuilds);
+
+    function filterGuilds() {
+        const searchValue = guildSearch.value.toLowerCase();
+        const raceValue = raceFilter.value;
+        const guildRows = document.querySelectorAll('.guild-row');
+
+        guildRows.forEach(row => {
+            const name = row.cells[1].textContent.toLowerCase();
+            const race = row.getAttribute('data-race');
+            if (name.includes(searchValue) && (raceValue === '' || race === raceValue)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    function filterPlayers() {
+        const searchValue = playerSearch.value.toLowerCase();
+        const players = document.querySelectorAll('.players-table tbody tr');
+        players.forEach(player => {
+            const name = player.cells[0].textContent.toLowerCase();
+            player.style.display = name.includes(searchValue) ? '' : 'none';
+        });
+    }
+
+    function showNotification(message) {
+        const notification = document.getElementById('notification');
+        notification.textContent = message;
+        notification.style.display = 'block';
+        setTimeout(() => {
+            notification.style.display = 'none';
+        }, 3000);
+    }
+});
+
+</script>
+
+<style>
+    .sortable {
+    cursor: pointer;
+}
+
+.sortable.asc::after {
+    content: ' ▲';
+}
+
+.sortable:not(.asc)::after {
+    content: ' ▼';
+}
+    .notification {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    font-size: 14px;
+    z-index: 1000;
+    opacity: 0.9;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+.content-inner {
+    width: 97%;
+}
+header {
+    background-color: #f4f4f4;
+    padding: 10px;
+    text-align: center;
+}
+
+header input, header select {
+    margin: 5px;
+    padding: 5px;
+}
+
+.guilds-table, .players-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+.guilds-table th, .guilds-table td, .players-table th, .players-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+
+.guilds-table th, .players-table th {
+    background-color: #f2f2f2;
+    color: black;
+}
+
+.guild-avatar {
+    max-width: 50px;
+    height: auto;
+    border-radius: 5px;
+}
+
+.toggle-players {
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+.toggle-players:hover {
+    background-color: #0056b3;
+}
+
+.players-container {
+    overflow-x: auto;
+}
+
+.players-table td {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.copy-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    margin-left: 5px;
+    color: #007bff;
+}
+
+.copy-btn:hover {
+    color: #0056b3;
+}
+</style>
+
+{% endblock %}

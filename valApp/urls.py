@@ -12,5 +12,6 @@ urlpatterns = [
     path('search', views.search, name='search'),
     path('inventory', views.inventory, name='inventory'),
     path('tracker', views.tracker, name='tracker'),
+    path('guilds', views.guilds, name='guilds'),
 
 ]

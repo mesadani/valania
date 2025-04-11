@@ -158,13 +158,40 @@ def getGuilds():
     else:
         return [];
 
-def getMembersGuilds(uuid):
+def getMembersGuildsRank(uuid):
      # URL a la que se hace la llamada
     url = "https://rtr.valannia.net/realms/state/rankingMembers"
     info = []
     # Body del POST (igual al de Postman)
     payload = {"uuid":uuid,"pagination":{"count":9999,"page":0}}
-    print(uuid)
+  
+    # Headers
+    headers = {
+        "Content-Type": "application/json"
+    }
+
+    # Hacer la petición
+    response = requests.post(url, json=payload, headers=headers)
+    
+    if response.status_code in [200, 201]:
+        data = response.json()
+        
+        # Extraemos price y amount de cada elemento
+        for item in data.get("elements", []):
+        
+            info.append(item)
+
+        return info;
+    else:
+        return [];
+    # Aceptamos 200 OK y 201 Created
+    
+def getMembersGuilds(uuid):
+     # URL a la que se hace la llamada
+    url = "https://rtr.valannia.net/realms/state/members"
+    info = []
+    # Body del POST (igual al de Postman)
+    payload = {"guild":uuid,"pagination":{"count":9999,"page":0}}
     # Headers
     headers = {
         "Content-Type": "application/json"
@@ -176,11 +203,12 @@ def getMembersGuilds(uuid):
     # Aceptamos 200 OK y 201 Created
     if response.status_code in [200, 201]:
         data = response.json()
-        
+
         # Extraemos price y amount de cada elemento
-        for item in data.get("elements", []):
-        
-            info.append(item)
+         
+        guilds = data.get("content", {}).get("members", [])
+        for guild in guilds:
+            info.append(guild)
 
         return info;
     else:
