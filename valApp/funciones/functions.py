@@ -3,10 +3,37 @@ import sys
 import django
 from solan.service import phantom_wallet
 from django.http import JsonResponse
-from django.db.models import Prefetch
+from django.db.models import Prefetch,OuterRef, Subquery
 import json
 from valApp.models import *
 from django.db import connection
+from django.db.models import Max,Min, F
+
+def top_10_least_expensive_by_category():
+    categories = ObjectCategorys.objects.all()
+    top_10_least_expensive_by_category = {}
+
+    for category in categories:
+        top_10_least_expensive_by_category[category.name] = (
+            Objects.objects.filter(objectCategory=category)
+            .filter(objectsprices__price__gt=0)
+            .annotate(min_price=Min('objectsprices__price'))
+            .annotate(amount=F('objectsprices__amount'))
+            .order_by('min_price')[:10]
+        )
+    return top_10_least_expensive_by_category
+def top_10_most_expensive_by_category():
+    categories = ObjectCategorys.objects.all()
+    top_10_most_expensive_by_category = {}
+
+    for category in categories:
+        top_10_most_expensive_by_category[category.name] = (
+            Objects.objects.filter(objectCategory=category)
+            .annotate(max_price=Max('objectsprices__price'))
+            .annotate(amount=F('objectsprices__amount'))
+            .order_by('-max_price')[:10]
+        )
+    return top_10_most_expensive_by_category
 def getMaxSupply(mint):
     token_accounts = phantom_wallet.getTokenLargestAccounts(mint)
     all_owners = []

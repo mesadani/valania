@@ -230,21 +230,35 @@ def guilds(request):
 
 
 def stadistics(request):
-    members_list = GuildMembers.objects.all().order_by('-professionMastery')
+    top_5_most_supply = Heroes.objects.all().order_by('-supply')[:10]
+    top_5_least_supply = Heroes.objects.all().order_by('supply')[:10]
 
-    paginator = Paginator(members_list, 10)  # Muestra 10 miembros por página
+    top_5_most_supply_objects = Objects.objects.filter(supply__lt=100000).order_by('-supply')[:5]
+    top_5_least_supply_objects = Objects.objects.filter(supply__gt=0).order_by('supply')[:5]
 
-    page_number = request.GET.get('page')
-    members = paginator.get_page(page_number)
 
-    races = Races.objects.all()
-    professions = Professions.objects.all()
+    top_10_most_expensive_objects = ObjectsPrices.objects.all().order_by('-price')[:10]
+    top_10_least_expensive_objects = ObjectsPrices.objects.all().order_by('price')[:10]
+   # top_10_most_expensive_objects = ObjectsPrices.objects.values('object_id').annotate(max_price=Max('price')).order_by('-max_price')[:10]
+
+   # top_10_least_expensive_objects = ObjectsPrices.objects.values('object_id').annotate(min_price=Max('price')).order_by('min_price')[:10]
 
     
+    top_10_most_expensive_by_category = functions.top_10_most_expensive_by_category()
+    top_10_least_expensive_by_category = functions.top_10_least_expensive_by_category()
+
+    
+    
     return render(request, 'stadistics.html', {
-        'guildmembers': members,
-        'races': races,
-        'professions': professions
+        'top_5_most_supply': top_5_most_supply,
+        'top_5_least_supply': top_5_least_supply,
+        'top_5_most_supply_objects': top_5_most_supply_objects,
+        'top_5_least_supply_objects': top_5_least_supply_objects,
+        'top_10_most_expensive_objects': top_10_most_expensive_objects,
+        'top_10_least_expensive_objects': top_10_least_expensive_objects,
+        'top_10_most_expensive_by_category': top_10_most_expensive_by_category, 
+        'top_10_least_expensive_by_category': top_10_least_expensive_by_category 
+   
     })
 
 def players(request):
