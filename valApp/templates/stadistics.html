@@ -1,0 +1,317 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<header>
+    <h1>Stadistics</h1>
+</header>
+<div class="filters-wrapper">
+    <input type="text" id="playerSearch" placeholder="Buscar Jugadores..." class="filter-input">
+    <select id="raceFilter" class="filter-select">
+        <option value="">Todas las Razas</option>
+        {% for race in races %}
+        <option value="{{ race.name }}">{{ race.name }}</option>
+        {% endfor %}
+    </select>
+    <select id="professionFilter" class="filter-select">
+        <option value="">Todas las Profesiones</option>
+        {% for profession in professions %}
+        <option value="{{ profession.name }}">{{ profession.name }}</option>
+        {% endfor %}
+    </select>
+</div>
+<main>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Address</th>
+                <th>Raza</th>
+                <th>Profesión</th> 
+                <th>Artisan</th>     
+                <th>Alchemist</th>     
+                <th>Architect</th>     
+                <th>Blacksmith</th>     
+                <th>Engineer</th>     
+                <th>Explorer</th>     
+                <th>Jeweler</th>     
+                <th>Miner</th>     
+                <th>Weekly Crafts</th>           
+                <th>Profession Mastery</th>
+                <th>Detalles</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for member in guildmembers %}
+            <tr>
+                <td>{{ member.name }}{% if member.guild %}{{ member.guild.tag }}{% else %}None{% endif %}</td>
+                <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    {% if member.address %}
+                        <button class="copy-btn" data-clipboard-text="{{ member.address }}">📋</button>
+                        {{ member.address }}
+                    {% endif %}
+                </td>
+                <td>{{ member.race.name }}</td>
+                <td>{% if member.profession %}{{ member.profession.name }}{% else %}None{% endif %}</td>
+                <td>{{ member.artisan|default:0 }}</td>
+                <td>{{ member.alchemist|default:0 }}</td>
+                <td>{{ member.architect|default:0 }}</td>
+                <td>{{ member.blacksmith|default:0 }}</td>
+                <td>{{ member.engineer|default:0 }}</td>
+                <td>{{ member.explorer|default:0 }}</td>
+                <td>{{ member.jeweler|default:0 }}</td>
+                <td>{{ member.miner|default:0 }}</td>
+                <td>{{ member.weeklyCrafts|default:0 }}</td>
+                <td>{{ member.professionMastery|default:0 }}</td>
+                <td>
+                    <button class="toggle-details">Ver Detalles</button>
+                    <div class="details" style="display: none;">
+                        <p>Puntos: {{ member.points }}</p>
+                        <p>Ranking: {{ member.ranking }}</p>
+                        <p>USDC: {{ member.usdc }}</p>
+              
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="pagination">
+        <span class="step-links">
+            {% if guildmembers.has_previous %}
+                <a href="?page=1">&laquo; first</a>
+                <a href="?page={{ guildmembers.previous_page_number }}">previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ guildmembers.number }} of {{ guildmembers.paginator.num_pages }}.
+            </span>
+
+            {% if guildmembers.has_next %}
+                <a href="?page={{ guildmembers.next_page_number }}">next</a>
+                <a href="?page={{ guildmembers.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+</main>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleButtons = document.querySelectorAll('.toggle-details');
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const details = this.nextElementSibling;
+            details.style.display = details.style.display === 'none' ? 'block' : 'none';
+            this.textContent = details.style.display === 'none' ? 'Ver Detalles' : 'Ocultar Detalles';
+        });
+    });
+
+    const playerSearch = document.getElementById('playerSearch');
+    const raceFilter = document.getElementById('raceFilter');
+    const professionFilter = document.getElementById('professionFilter');
+
+    playerSearch.addEventListener('input', filterMembers);
+    raceFilter.addEventListener('change', filterMembers);
+    professionFilter.addEventListener('change', filterMembers);
+
+    function filterMembers() {
+        const searchValue = playerSearch.value.toLowerCase();
+        const raceValue = raceFilter.value;
+        const professionValue = professionFilter.value;
+        const rows = document.querySelectorAll('tbody tr');
+
+        rows.forEach(row => {
+            const name = row.cells[0].textContent.toLowerCase();
+            const race = row.cells[2].textContent;
+            const profession = row.cells[3].textContent;
+            const matchesSearch = name.includes(searchValue);
+            const matchesRace = raceValue === '' || race === raceValue;
+            const matchesProfession = professionValue === '' || profession === professionValue;
+
+            if (matchesSearch && matchesRace && matchesProfession) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    // Sorting functionality
+    const table = document.querySelector('table');
+    const headers = table.querySelectorAll('th');
+    const tableBody = table.querySelector('tbody');
+    const rows = tableBody.querySelectorAll('tr');
+
+    const directions = Array.from(headers).map(() => '');
+
+    headers.forEach((header, index) => {
+        if (index > 3 && index < headers.length - 1) { // Skip Name, Address, Raza, Profesión, and Detalles
+            header.classList.add('sortable');
+            header.addEventListener('click', () => {
+                const direction = directions[index] || 'asc';
+                const multiplier = direction === 'asc' ? 1 : -1;
+                const newRows = Array.from(rows);
+
+                newRows.sort((rowA, rowB) => {
+                    const cellA = rowA.querySelectorAll('td')[index].textContent.trim();
+                    const cellB = rowB.querySelectorAll('td')[index].textContent.trim();
+
+                    const a = parseFloat(cellA) || 0;
+                    const b = parseFloat(cellB) || 0;
+
+                    return (a - b) * multiplier;
+                });
+
+                directions[index] = direction === 'asc' ? 'desc' : 'asc';
+
+                newRows.forEach(newRow => {
+                    tableBody.appendChild(newRow);
+                });
+
+                headers.forEach(h => h.classList.remove('sorted-asc', 'sorted-desc'));
+                header.classList.add(direction === 'asc' ? 'sorted-asc' : 'sorted-desc');
+            });
+        }
+    });
+
+    function showNotification(message) {
+        const notification = document.getElementById('notification');
+        notification.textContent = message;
+        notification.style.display = 'block';
+        setTimeout(() => {
+            notification.style.display = 'none';
+        }, 3000);
+    }
+
+    
+});
+    </script>
+    
+
+<style>
+    
+.content-inner {
+    width: 99%;
+}
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f7fa;
+}
+th.sortable {
+    cursor: pointer;
+    position: relative;
+    padding-right: 20px; /* Espacio para el icono */
+}
+
+th.sortable::after {
+    content: '⇅'; /* Icono de ordenación */
+    position: absolute;
+    right: 10px;
+    font-size: 12px;
+    color: #ccc;
+    transition: color 0.3s;
+}
+
+th.sortable.sorted-asc::after {
+    content: '↑'; /* Icono de ordenación ascendente */
+    color: #333;
+}
+
+th.sortable.sorted-desc::after {
+    content: '↓'; /* Icono de ordenación descendente */
+    color: #333;
+}
+.notification {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    font-size: 14px;
+    z-index: 1000;
+    opacity: 0.9;
+}
+header {
+    background-color: #2c3e50;
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+.filters-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+}
+
+.filter-input, .filter-select {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.filter-input:focus, .filter-select:focus {
+    border-color: #1abc9c;
+    box-shadow: 0 0 5px rgba(26, 188, 156, 0.5);
+}
+
+.filter-select {
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+.filter-input::placeholder {
+    color: #aaa;
+}
+
+.filter-input:hover, .filter-select:hover {
+    border-color: #1abc9c;
+}
+
+table {
+    width: 90%;
+    margin: 20px auto;
+    border-collapse: collapse;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #34495e;
+    color: white;
+    font-weight: bold;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+
+
+.details {
+  
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+    margin-top: 10px;
+}
+
+</style>
+
+{% endblock %}

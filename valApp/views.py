@@ -1,13 +1,14 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse,JsonResponse
 # Create your views here.
-from .models import Professions, Heroes, Races, Crafting, craftingRequirements, CombatUnits,Rarities, Objects,Guilds
+from .models import Professions, Heroes, Races, Crafting, craftingRequirements, CombatUnits,Rarities, Objects,Guilds,GuildMembers
 from solan.service.phantom_wallet import get_nft_transactions, get_nfts, extract_nft_info, getMarketPrices
 import json
 from django.views.decorators.csrf import csrf_exempt
 from .funciones import functions
 from collections import defaultdict
 from deep_translator import GoogleTranslator
+from django.core.paginator import Paginator
 def index(request):
     title = 'Welcome to the Jungle !'
     professions = Professions.objects.all();
@@ -218,3 +219,40 @@ def guilds(request):
     guilds = Guilds.objects.all()
     races = Races.objects.all()
     return render(request, 'guilds.html', {'guilds': guilds, 'races': races})
+
+
+def stadistics(request):
+    members_list = GuildMembers.objects.all().order_by('-professionMastery')
+
+    paginator = Paginator(members_list, 10)  # Muestra 10 miembros por página
+
+    page_number = request.GET.get('page')
+    members = paginator.get_page(page_number)
+
+    races = Races.objects.all()
+    professions = Professions.objects.all()
+
+    
+    return render(request, 'stadistics.html', {
+        'guildmembers': members,
+        'races': races,
+        'professions': professions
+    })
+
+def players(request):
+    members_list = GuildMembers.objects.all().order_by('-professionMastery')
+
+    paginator = Paginator(members_list, 300)  # Muestra 10 miembros por página
+
+    page_number = request.GET.get('page')
+    members = paginator.get_page(page_number)
+
+    races = Races.objects.all()
+    professions = Professions.objects.all()
+
+    
+    return render(request, 'players.html', {
+        'guildmembers': members,
+        'races': races,
+        'professions': professions
+    })

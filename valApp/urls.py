@@ -13,5 +13,7 @@ urlpatterns = [
     path('inventory', views.inventory, name='inventory'),
     path('tracker', views.tracker, name='tracker'),
     path('guilds', views.guilds, name='guilds'),
+    path('players', views.players, name='players'),
+    path('stadistics', views.stadistics, name='stadistics'),
 
 ]

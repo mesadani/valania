@@ -206,10 +206,10 @@ class GuildMembers(models.Model):
     usdc = models.IntegerField(default=0)
     ranking = models.IntegerField( null=True)
     herokind = models.CharField(max_length=200, null=True) 
-    heroLvl = models.IntegerField( null=True)
+    heroLvl = models.IntegerField(default=0)
     profession = models.ForeignKey(Professions, on_delete=models.CASCADE, null=True)  # Permitir nulo
-    professionMastery = models.IntegerField(null=True)  # Permitir nulo
-    weeklyCrafts = models.IntegerField(null=True)  # Permitir nulo
+    professionMastery = models.IntegerField(default=0)  # Permitir nulo
+    weeklyCrafts = models.IntegerField(default=0)  # Permitir nulo
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.name               

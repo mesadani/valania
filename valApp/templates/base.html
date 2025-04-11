@@ -128,20 +128,29 @@
                 </li>
                 <li class="menu-item">
                     <a href="/inventory" class="{% if request.path == '/inventory' %}active{% endif %}">
-                        <i class="fas fa-boxes"></i> Inventory
+                        <i class="fas fa-wallet"></i> Inventory
                     </a>
                 </li>
                 <li class="menu-item">
                     <a href="/tracker" class="{% if request.path == '/tracker' %}active{% endif %}">
-                        <i class="fas fa-wallet"></i> Wallet Tracker
+                        <i class="fas fa-chart-line"></i> Wallet Tracker
                     </a>
                 </li>
                 <li class="menu-item">
                     <a href="/guilds" class="{% if request.path == '/guilds' %}active{% endif %}">
-                        <i class="fas fa-comments"></i> Guilds
+                        <i class="fas fa-users"></i> Guilds
                     </a>
                 </li>
-
+                <li class="menu-item">
+                    <a href="/players" class="{% if request.path == '/players' %}active{% endif %}">
+                        <i class="fas fa-user"></i> Players
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="#" class="{% if request.path == '/stadistics' %}active{% endif %}">
+                        <i class="fas fa-chart-bar"></i> Stadistics
+                    </a>
+                </li>
                 <li class="menu-item">
                     <a href="#" class="{% if request.path == '/chatbot' %}active{% endif %}">
                         <i class="fas fa-comments"></i> ChatBot
