@@ -3,14 +3,16 @@
 {% block content %}
 <header>
     <h1>Guilds</h1>
-    <input type="text" id="guildSearch" placeholder="Search Guilds...">
-    <input type="text" id="playerSearch" placeholder="Search Players...">
-    <select id="raceFilter">
-        <option value="">All races</option>
-        {% for race in races %}
-        <option value="{{ race.name }}">{{ race.name }}</option>
-        {% endfor %}
-    </select>
+    <div class="filters-wrapper">
+        <input type="text" id="guildSearch" placeholder="Buscar Guilds..." class="filter-input">
+        <input type="text" id="playerSearch" placeholder="Buscar Jugadores..." class="filter-input">
+        <select id="raceFilter" class="filter-select">
+            <option value="">All races</option>
+            {% for race in races %}
+            <option value="{{ race.name }}">{{ race.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
 </header>
 <main>
     <table class="guilds-table">
@@ -234,7 +236,7 @@ body {
     width: 97%;
 }
 header {
-    background-color: #f4f4f4;
+    background-color: #1c1c0d;
     padding: 10px;
     text-align: center;
 }
@@ -303,6 +305,46 @@ header input, header select {
 .copy-btn:hover {
     color: #0056b3;
 }
+
+
+.filters-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.filter-input, .filter-select {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.filter-input:focus, .filter-select:focus {
+    border-color: #1abc9c;
+    box-shadow: 0 0 5px rgba(26, 188, 156, 0.5);
+}
+
+.filter-select {
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+.filter-input::placeholder {
+    color: #aaa;
+}
+
+.filter-input:hover, .filter-select:hover {
+    border-color: #1abc9c;
+}
+
+
+
+
 </style>
 
 {% endblock %}
