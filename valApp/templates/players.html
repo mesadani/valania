@@ -27,41 +27,27 @@
                 <th>Address</th>
                 <th>Raza</th>
                 <th>Profesión</th> 
-                <th>Artisan</th>     
-                <th>Alchemist</th>     
-                <th>Architect</th>     
-                <th>Blacksmith</th>     
-                <th>Engineer</th>     
-                <th>Explorer</th>     
-                <th>Jeweler</th>     
-                <th>Miner</th>     
+                <th>Total Points</th>
                 <th>Weekly Crafts</th>           
-                <th>Profession Mastery</th>
+
     
             </tr>
         </thead>
         <tbody>
             {% for member in guildmembers %}
             <tr>
-                <td>{{ member.name }}{% if member.guild %}{{ member.guild.tag }}{% else %}None{% endif %}</td>
+                <td style="max-width: 80px;">{{ member.name }}{% if member.guild %}{{ member.guild.tag }}{% else %}None{% endif %}</td>
                 <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                     {% if member.address %}
                         <button class="copy-btn" data-clipboard-text="{{ member.address }}">📋</button>
                         {{ member.address }}
                     {% endif %}
                 </td>
-                <td>{{ member.race.name }}</td>
-                <td>{% if member.profession %}{{ member.profession.name }}{% else %}None{% endif %}</td>
-                <td>{{ member.artisan|default:0 }}</td>
-                <td>{{ member.alchemist|default:0 }}</td>
-                <td>{{ member.architect|default:0 }}</td>
-                <td>{{ member.blacksmith|default:0 }}</td>
-                <td>{{ member.engineer|default:0 }}</td>
-                <td>{{ member.explorer|default:0 }}</td>
-                <td>{{ member.jeweler|default:0 }}</td>
-                <td>{{ member.miner|default:0 }}</td>
-                <td>{{ member.weeklyCrafts|default:0 }}</td>
+                <td>{{ member.race__name }}</td>
+                <td>{% if member.profession__name %}{{ member.profession__name }}{% else %}None{% endif %}</td>
                 <td>{{ member.professionMastery|default:0 }}</td>
+                <td>{{ member.weeklyCrafts|default:0 }}</td>
+
                 
             </tr>
             {% endfor %}
@@ -136,7 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const directions = Array.from(headers).map(() => '');
 
     headers.forEach((header, index) => {
-        if (index > 3 && index < headers.length - 1) { // Skip Name, Address, Raza, Profesión, and Detalles
+        if (header.textContent.trim() === 'Total Points' || header.textContent.trim() === 'Weekly Crafts') {
             header.classList.add('sortable');
             header.addEventListener('click', () => {
                 const direction = directions[index] || 'asc';

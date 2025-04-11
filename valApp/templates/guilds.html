@@ -47,16 +47,9 @@
                                     <th style="max-width: 150px;">Name</th>
                                     <th style="max-width: 150px;">Address</th>
                                     <th class="sortable" data-column="points">Points</th>
-                                    <th class="sortable" data-column="artisan">Artisan</th>
-                                    <th class="sortable" data-column="alchemist">Alchemist</th>
-                                    <th class="sortable" data-column="architect">Architect</th>
-                                    <th class="sortable" data-column="blacksmith">Blacksmith</th>
-                                    <th class="sortable" data-column="engineer">Engineer</th>
-                                    <th class="sortable" data-column="explorer">Explorer</th>
-                                    <th class="sortable" data-column="jeweler">Jeweler</th>
-                                    <th class="sortable" data-column="miner">Miner</th>
+        
                                     <th style="max-width: 100px;">Profession</th>
-                                    <th class="sortable" data-column="professionMastery">Profession Mastery</th>
+                                    <th class="sortable" data-column="professionMastery">Profession Points</th>
                                     <th class="sortable" data-column="ranking">Ranking</th>
                                     <th class="sortable" data-column="usdc">USDC</th>
                                     <th class="sortable" data-column="weeklyCrafts">Weekly Crafts</th>
@@ -70,7 +63,7 @@
                                         {{ player.name }}
                                     {% endif %}
                                 </td>
-                                <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                <td style="max-width: 50px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                     {% if player.address %}
                                         <button class="copy-btn" data-clipboard-text="{{ player.address }}">📋</button>
                                         {{ player.address }}
@@ -78,16 +71,8 @@
                                 </td>
                                 
                                     <td>{{ player.points }}</td>
-                                    <td>{{ player.artisan }}</td>
-                                    <td>{{ player.alchemist }}</td>
-                                    <td>{{ player.architect }}</td>
-                                    <td>{{ player.blacksmith }}</td>
-                                    <td>{{ player.engineer }}</td>
-                                    <td>{{ player.explorer }}</td>
-                                    <td>{{ player.jeweler }}</td>
-                                    <td>{{ player.miner }}</td>
                                     <td>{% if player.profession %}{{ player.profession.name }}{% else %}None{% endif %}</td>
-                                    <td>{{ player.professionMastery }}</td>
+                                    <td style="max-width: 200px;">{{ player.professionMastery }}</td>
                                     <td>{{ player.ranking }}</td>
                                     <td>{{ player.usdc }}</td>
                                     <td>{{ player.weeklyCrafts }}</td>

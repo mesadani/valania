@@ -186,7 +186,7 @@ class Guilds(models.Model):
 
 class GuildMembers(models.Model):
     guild = models.ForeignKey(Guilds, on_delete=models.CASCADE,null=True)
-    race = models.ForeignKey(Races, on_delete=models.CASCADE,null=True)
+    race = models.ForeignKey(Races, on_delete=models.CASCADE,null=True, related_name='members')
     name = models.CharField(max_length=200, null=True)
     idRank = models.CharField(max_length=200, null=True)
     uuid = models.CharField(max_length=200, null=True)
@@ -207,7 +207,7 @@ class GuildMembers(models.Model):
     ranking = models.IntegerField( null=True)
     herokind = models.CharField(max_length=200, null=True) 
     heroLvl = models.IntegerField(default=0)
-    profession = models.ForeignKey(Professions, on_delete=models.CASCADE, null=True)  # Permitir nulo
+    profession = models.ForeignKey(Professions, on_delete=models.CASCADE, null=True, related_name='members')  # Permitir nulo
     professionMastery = models.IntegerField(default=0)  # Permitir nulo
     weeklyCrafts = models.IntegerField(default=0)  # Permitir nulo
     created_at = models.DateTimeField(auto_now_add=True)

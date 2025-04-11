@@ -11,6 +11,7 @@ from deep_translator import GoogleTranslator
 from django.core.paginator import Paginator
 from django.db.models import Min
 from django.db.models import Max
+from django.db.models import Prefetch
 def index(request):
     title = 'Welcome to the Jungle !'
     professions = Professions.objects.all();
@@ -218,9 +219,14 @@ def tracker(request):
     return render(request, 'tracker.html')
 
 def guilds(request):
-    guilds = Guilds.objects.all()
+    guildmembers_prefetch = Prefetch(
+        'guildmembers_set',
+        queryset=GuildMembers.objects.only('name', 'address', 'points', 'profession__name', 'professionMastery', 'ranking', 'usdc', 'weeklyCrafts').select_related('profession')
+    )
+    guilds = Guilds.objects.all().prefetch_related(guildmembers_prefetch)
     races = Races.objects.all()
     return render(request, 'guilds.html', {'guilds': guilds, 'races': races})
+
 
 
 def stadistics(request):
@@ -242,7 +248,7 @@ def stadistics(request):
     })
 
 def players(request):
-    members_list = GuildMembers.objects.all().order_by('-professionMastery')
+    members_list = GuildMembers.objects.all().order_by('-professionMastery').values('name','address', 'professionMastery', 'race__name','profession__name','weeklyCrafts')
 
     paginator = Paginator(members_list, 300)  # Muestra 10 miembros por página
 
