@@ -273,11 +273,11 @@ def market(request):
         .annotate(min_created_at=Min('objectsprices__created_at'))
         .order_by('min_created_at')
         .select_related('objectCategory', 'objectType')
-        .prefetch_related('objectsprices_set')
+        .prefetch_related('objectsprices_set', 'objectsbuyprices_set')
     )
 
     # Configurar la paginación
-    paginator = Paginator(objects_with_prices, 100)  # Mostrar 10 objetos por página
+    paginator = Paginator(objects_with_prices, 500)  # Mostrar 10 objetos por página
     page_number = request.GET.get('page')
     page_objects = paginator.get_page(page_number)
 

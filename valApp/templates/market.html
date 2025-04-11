@@ -29,7 +29,8 @@
             <tr>
                 <th>Image</th>
                 <th>Name</th>
-                <th>Prices</th>
+                <th>Buy Orders</th>
+                <th>Prices</th>                
                 <th>Go Market</th>
             </tr>
         </thead>
@@ -39,6 +40,26 @@
             <tr data-category="{{ object.objectCategory.name }}" data-type="{{ object.objectType.name }}">
                 <td><img src="{{ object.image.url }}" alt="{{ object.name }}" width="50"></td>
                 <td>{{ object.name }}</td>
+                <td>
+                    {% with object.objectsbuyprices_set.all|dictsort:"price" as sorted_prices %}
+                        {% for price in sorted_prices|slice:":3" %}
+                            <div>
+                                Cantidad: {{ price.amount }}, Precio: {{ price.price }}
+                        </div>
+                        {% endfor %}
+                        {% if sorted_prices|length > 3 %}
+                            <button class="toggle-more-prices">Ver más precios</button>
+                            <div class="more-prices" style="display: none;">
+                                {% for price in sorted_prices|slice:"3:" %}
+                                    <div>
+                                        Cantidad: {{ price.amount }}, Precio: {{ price.price }}
+                                        
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+                </td>
                 <td>
                     {% with object.objectsprices_set.all|dictsort:"price" as sorted_prices %}
                         {% for price in sorted_prices|slice:":3" %}
@@ -52,9 +73,7 @@
                                 {% for price in sorted_prices|slice:"3:" %}
                                     <div>
                                         Cantidad: {{ price.amount }}, Precio: {{ price.price }}
-                                        <a href="X" target="_blank">
-                                            <i class="fas fa-external-link-alt"></i>
-                                        </a>
+                                        
                                     </div>
                                 {% endfor %}
                             </div>
