@@ -44,7 +44,7 @@
                     {% with object.objectsbuyprices_set.all|dictsort:"price" as sorted_prices %}
                         {% for price in sorted_prices|slice:":3" %}
                             <div>
-                                Cantidad: {{ price.amount }}, Precio: {{ price.price }}
+                                Amount: {{ price.amount }}, Price: {{ price.price }}
                         </div>
                         {% endfor %}
                         {% if sorted_prices|length > 3 %}
@@ -52,7 +52,7 @@
                             <div class="more-prices" style="display: none;">
                                 {% for price in sorted_prices|slice:"3:" %}
                                     <div>
-                                        Cantidad: {{ price.amount }}, Precio: {{ price.price }}
+                                        Amount: {{ price.amount }}, Price: {{ price.price }}
                                         
                                     </div>
                                 {% endfor %}
@@ -64,7 +64,7 @@
                     {% with object.objectsprices_set.all|dictsort:"price" as sorted_prices %}
                         {% for price in sorted_prices|slice:":3" %}
                             <div>
-                                Cantidad: {{ price.amount }}, Precio: {{ price.price }}
+                                Amount: {{ price.amount }}, Price: {{ price.price }}
                         </div>
                         {% endfor %}
                         {% if sorted_prices|length > 3 %}
@@ -72,7 +72,7 @@
                             <div class="more-prices" style="display: none;">
                                 {% for price in sorted_prices|slice:"3:" %}
                                     <div>
-                                        Cantidad: {{ price.amount }}, Precio: {{ price.price }}
+                                        Amount: {{ price.amount }}, Price: {{ price.price }}
                                         
                                     </div>
                                 {% endfor %}
