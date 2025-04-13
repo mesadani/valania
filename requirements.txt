@@ -22,3 +22,4 @@ channels
 daphne
 channels_redis
 numpy
+pynacl
