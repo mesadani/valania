@@ -1,7 +1,7 @@
 from django.db import models
 from cloudinary.models import CloudinaryField
 # Create your models here.
-
+from django.contrib.auth.models import User
 class Professions(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField() 
@@ -222,3 +222,26 @@ class ObjectsBuyPrices(models.Model):
 
     def __str__(self):
         return self.name 
+    
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    message = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'Notificación para {self.user.username}: {self.message}'    
+    
+
+
+class UserNotification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    object = models.ForeignKey(Objects, on_delete=models.CASCADE)
+    price = models.FloatField()
+    amount = models.IntegerField(default=1)
+    available = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f'Notificación para {self.user.username}: {self.message}'        

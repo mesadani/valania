@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse,JsonResponse
 # Create your views here.
-from .models import Professions, Heroes, Races, Crafting, craftingRequirements, CombatUnits,Rarities, Objects,Guilds,GuildMembers, ObjectCategorys, ObjectTypes,ObjectsPrices
+from .models import Professions, Heroes, Races, Crafting, craftingRequirements, CombatUnits,Rarities, Objects,Guilds,GuildMembers, ObjectCategorys, ObjectTypes,ObjectsPrices,UserNotification
 from solan.service.phantom_wallet import get_nft_transactions, get_nfts, extract_nft_info, getMarketPrices
 import json
 from django.views.decorators.csrf import csrf_exempt
@@ -12,6 +12,21 @@ from django.core.paginator import Paginator
 from django.db.models import Min
 from django.db.models import Max
 from django.db.models import Prefetch
+from django.core.cache import cache
+from nacl.signing import VerifyKey
+from nacl.exceptions import BadSignatureError
+from django.contrib.auth import login, logout
+import os
+from django.contrib.auth.models import User
+import base58
+from django.contrib.auth.decorators import login_required as login_requireds
+
+
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+from .models import Notification
+
+
 def index(request):
     title = 'Welcome to the Jungle !'
     professions = Professions.objects.all();
@@ -212,9 +227,6 @@ def profession_detail(request, profession_id):
 
     return JsonResponse(response_data)
 
-def inventory(request):
-    return render(request, 'inventory.html')
-
 def tracker(request):
     return render(request, 'tracker.html')
 
@@ -311,3 +323,127 @@ def market(request):
         'last_update': last_update
     })
 
+@csrf_exempt
+def get_nonce(request):
+    data = json.loads(request.body)
+    public_key = data["public_key"]
+    nonce = os.urandom(16).hex()
+
+    cache.set(f"nonce_{public_key}", nonce, timeout=300)  # 5 minutos
+    return JsonResponse({"nonce": nonce})
+
+
+@csrf_exempt
+def verify_login(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Método no permitido"}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        public_key = data["public_key"]
+        signature = bytes(data["signature"])  # ✅ CONVERTIR array a bytes
+    except (KeyError, ValueError, TypeError) as e:
+        return JsonResponse({"error": f"Entrada inválida: {e}"}, status=400)
+
+    # Recuperar el nonce previamente guardado (en cache o DB)
+    nonce = cache.get(f"nonce_{public_key}")
+    if not nonce:
+        return JsonResponse({"error": "Nonce no encontrado o expirado"}, status=400)
+
+    try:
+        # Convertir la clave pública de Base58 a binario
+        public_key_bytes = base58.b58decode(public_key)  # Usamos base58 para convertir
+        verify_key = VerifyKey(public_key_bytes)  # Crear la verificación con la clave pública
+
+        # Verificar la firma
+        message = nonce.encode("utf-8")
+        verify_key.verify(message, signature)
+
+    except ValueError:
+        return JsonResponse({"error": "Clave pública inválida"}, status=400)
+    except BadSignatureError:
+        return JsonResponse({"error": "Firma inválida"}, status=400)
+
+    # Autenticación exitosa, crear/obtener usuario y login
+    user, _ = User.objects.get_or_create(username=public_key[:30])  # Usamos parte de la pubkey
+    login(request, user)
+
+    # Eliminar nonce para evitar reuse
+    cache.delete(f"nonce_{public_key}")
+
+    return JsonResponse({"success": True})
+
+def logout_view(request):
+    logout(request)
+    return redirect('/')
+def login_phantom(request):
+
+    objects  = Objects.objects.all()
+    notifications = []
+
+    if request.user.is_authenticated:
+        notifications = UserNotification.objects.filter(user=request.user).order_by('-created_at')[:6]
+
+
+
+        
+
+    return render(request, 'login_phantom.html', {
+        'objects': objects,
+        'notifications':notifications,
+    
+    })
+
+def crear_notificacion(user, message):
+    Notification.objects.create(user=user, message=message)
+
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        f'user_{user.id}',
+        {
+            'type': 'send_notification',
+            'message': message,
+        }
+    )
+###### AUTH VIEWS ######
+
+
+@login_requireds
+def inventory(request):
+    crear_notificacion(request.user, "¡Has recibido una nueva espada legendaria!")
+    return render(request, 'inventory.html')
+
+
+@login_requireds
+def mark_notifications_as_read(request):
+    if request.method == "POST":
+        request.user.notifications.filter(is_read=False).update(is_read=True)
+        return JsonResponse({'status': 'ok'})
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+
+@login_requireds
+def save_order(request):
+    data = json.loads(request.body)
+    object_id = data["object_id"]
+    price = data["price"]
+    user = request.user
+    object = Objects.objects.get(pk=object_id)
+    UserNotification.objects.create(user=user, object=object, price = price)
+
+    crear_notificacion(request.user, "¡Has recibido una nueva espada legendaria!")
+    return JsonResponse({'status': 'ok'})
+
+
+
+@login_requireds
+def delete_order(request):
+    data = json.loads(request.body)
+    idNotification = data["idNotification"]
+
+    # Obtener la instancia de UserNotification que deseas eliminar
+    notification = UserNotification.objects.get(id=idNotification)
+    # Eliminar la instancia
+    notification.delete()
+
+    return JsonResponse({'status': 'ok'})

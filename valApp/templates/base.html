@@ -10,7 +10,19 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     <style>
-        
+        .unread {
+            font-weight: bold;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        .dropdown-content.show {
+            display: block;
+        }
         * {
             margin: 0;
             padding: 0;
@@ -24,7 +36,6 @@
         }
 
         .container {
-        
             width: 100%;
             min-height: 100vh;
         }
@@ -100,49 +111,154 @@
             text-align: center;
         }
         .crypto-prices-container {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .crypto-price {
+            display: flex;
+            align-items: center;
+        }
+
+        .crypto-logo {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+        }
+        .menu-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .logo-image {
+            width: 200px;
+            height: auto;
+        }
+
+        .separator {
+            border-top: 1px solid white;
+            margin: 10px 0;
+        }
+        .notification-icon {
+    font-size: 24px;
+    color: white;
+    transition: color 0.3s;
+}
+
+.notification-icon:hover {
+    color: #1abc9c;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
     background-color: #2c3e50;
     color: white;
+    border: 1px solid #ddd;
     padding: 10px;
     border-radius: 5px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
     z-index: 1000;
 }
 
-.crypto-price {
-    display: flex;
-    align-items: center;
+.dropdown-content.show {
+    display: block;
 }
 
-.crypto-logo {
-    width: 24px;
-    height: 24px;
-    margin-right: 10px;
-}
-.menu-logo {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    /* Ajusta el tamaño y el posicionamiento según sea necesario */
+.unread {
+    font-weight: bold;
+    margin-bottom: 5px;
 }
 
-.logo-image {
-    width: 200px; /* Ajusta el tamaño del logo */
-    height: auto; /* Mantiene la proporción del logo */
+.dropdown-content button {
+    background-color: #2980b9;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.dropdown-content button:hover {
+    background-color: #1abc9c;
 }
 
 
+        .connected-text {
+            color: green;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .menu-list {
+            list-style: none; /* Asegúrate de que esta línea esté presente */
+            padding: 0;
+        }
+        .notification-indicator {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 10px;
+    height: 10px;
+    background-color: red;
+    border-radius: 50%;
+    border: 2px solid #2c3e50; /* Color de fondo de la barra lateral */
+}
+.notification-item {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
 
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.unread {
+    background-color: #f0f0f0; /* Fondo diferente para las no leídas */
+    font-weight: bold;
+}
     </style>
+    {% if user.is_authenticated %}
+    <script>
+    const audio = new Audio('/static/sounds/notification.mp3');
+    const loc = window.location;
+    const wsStart = loc.protocol === "https:" ? "wss://" : "ws://";
+    const socket = new WebSocket(wsStart + loc.host + "/ws/notifications/");
+    
+    socket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+
+        // Reproduce el sonido de la notificación
+        audio.play();
+        const notiList = document.getElementById('notification-list');
+        const newNoti = document.createElement('div');
+        newNoti.classList.add('unread');
+        newNoti.innerText = data.message;
+        notiList.prepend(newNoti);
+    };
+    
+    socket.onclose = function(e) {
+        console.error('WebSocket cerrado inesperadamente');
+    };
+    </script>
+    {% endif %}
     <script>
 document.addEventListener('DOMContentLoaded', function() {
     const solPriceElement = document.getElementById('sol-price');
     const btcPriceElement = document.getElementById('btc-price');
+    const notificationIndicator = document.getElementById('notification-indicator');
 
     function fetchCryptoPrices() {
         fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana,bitcoin&vs_currencies=usd,eur')
@@ -169,16 +285,40 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Optionally, refresh the prices every minute
     setInterval(fetchCryptoPrices, 60000);
+
+    // Check for unread notifications
+    const unreadNotifications = document.querySelectorAll('#notification-list .unread');
+    if (unreadNotifications.length > 0) {
+        notificationIndicator.style.display = 'block';
+    }
+
+    window.markAllRead = function() {
+        fetch('notifications/mark-read/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        }).then(res => {
+            if (res.ok) {
+                document.querySelectorAll('#notification-list .unread').forEach(el => el.classList.remove('unread'));
+                notificationIndicator.style.display = 'none';
+            }
+        });
+    };
+
+    window.toggleNotifications = function() {
+        document.getElementById('notification-list').classList.toggle('show');
+    };
 });
 
-
-
-
     </script>
+   
 </head>
 <body>
     <div class="container">
         <div class="sidebar">
+
             <div id="crypto-prices-container" class="crypto-prices-container">
                 <div class="crypto-price">
                     <img src="https://www.cryptologos.cc/logos/solana-sol-logo.png?v=040" alt="Solana Logo" class="crypto-logo">
@@ -193,6 +333,43 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="menu-logo">
                 <img src="/static/images/logo.png" alt="Menu Logo" class="logo-image">
             </div>
+
+            {% if user.is_authenticated %}
+                <div class="connected-text">Connected</div>
+                <div id="notifications" class="dropdown" style="position: relative;">
+                    <button onclick="toggleNotifications()" style="background: none; border: none; cursor: pointer; position: relative;">
+                        <i class="fas fa-bell notification-icon"></i>
+                        <span id="notification-indicator" class="notification-indicator" style="display: none;"></span>
+                    </button>
+                    <div id="notification-list" class="dropdown-content">
+                        {% for notification in user.notifications.all|slice:":6" %}
+                            <div class="notification-item {% if not notification.is_read %}unread{% endif %}">
+                                {{ notification.message }}
+                            </div>
+                        {% empty %}
+                            <div>No tienes notificaciones</div>
+                        {% endfor %}
+                        <button onclick="markAllRead()">Marcar como leídas</button>
+                    </div>
+                </div>
+                
+                
+                <ul>
+                    <li class="menu-item">
+                        <a href="{% url 'login_phantom' %}" class="{% if request.path == '/login_phantom' %}active{% endif %}">
+                            <i class="fas fa-user"></i> Account
+                        </a>
+                    </li>
+                </ul>
+                <div class="separator"></div>
+            {% else %}
+                <li class="menu-item">
+                    <a href="{% url 'login_phantom' %}" class="btn-login">
+                        <i class="fas fa-sign-in-alt"></i> Login Phantom
+                    </a>
+                </li>
+            {% endif %}
+
             <ul class="menu-list">
                 <li class="menu-item">
                     <a href="/heroes" class="{% if request.path == '/heroes' %}active{% endif %}">
@@ -239,6 +416,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <i class="fas fa-chart-bar"></i> Stadistics
                     </a>
                 </li>
+
                 <li class="menu-item">
                     <a href="#" class="{% if request.path == '/chatbot' %}active{% endif %}">
                         <i class="fas fa-comments"></i> ChatBot

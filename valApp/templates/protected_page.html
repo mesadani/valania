@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Login con Phantom Wallet</title>
+</head>
+<body>
+    <h1>Autenticación con Phantom Wallet</h1>
+
+    <div id="status">
+        {% if user.is_authenticated %}
+            <p>Conectado como: {{ user.username }}</p>
+            <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit">Cerrar sesión</button>
+            </form>
+        {% else %}
+            <button onclick="connectAndLogin()">Conectar y Login con Phantom</button>
+        {% endif %}
+    </div>
+
+    <!-- Solana Web3.js -->
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+
+    <script>
+    async function connectAndLogin() {
+        const provider = window.solana;
+
+        if (!provider || !provider.isPhantom) {
+            alert("Por favor instala Phantom Wallet: https://phantom.app/");
+            return;
+        }
+
+        try {
+            // Conectar con Phantom
+            const connectResponse = await provider.connect();
+            const publicKey = connectResponse.publicKey.toString();
+            console.log("Conectado con:", publicKey);
+
+            // Obtener nonce del servidor
+            const nonceRes = await fetch("/get-nonce/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ public_key: publicKey })
+            });
+            const { nonce } = await nonceRes.json();
+            console.log("Nonce recibido:", nonce);
+
+            // Firmar el nonce
+            const encodedMessage = new TextEncoder().encode(nonce);
+            const signedMessage = await provider.signMessage(encodedMessage, "utf8");
+
+            // Enviar firma al servidor
+            const verifyRes = await fetch("/verify-login/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    public_key: publicKey,
+                    signature: Array.from(signedMessage.signature)
+                })
+            });
+
+            const result = await verifyRes.json();
+            if (result.success) {
+                alert("Login exitoso");
+                location.reload();
+            } else {
+                alert("Error: " + result.error);
+            }
+        } catch (err) {
+            console.error("Error al conectar con Phantom:", err);
+            alert("Ocurrió un error al autenticar con Phantom.");
+        }
+    }
+    </script>
+</body>
+</html>

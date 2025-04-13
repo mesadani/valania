@@ -18,3 +18,7 @@ scikit-learn
 solders
 base58
 deep_translator
+channels
+daphne
+channels_redis
+numpy

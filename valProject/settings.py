@@ -31,6 +31,7 @@ SECRET_KEY = 'django-insecure-9*=e2zikxfbi_=@&=een=awwz0t9-*-djrqug%g$z#(%hmink7
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+
 ALLOWED_HOSTS = ["*"]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'whitenoise.runserver_nostatic',  # Asegúrate de incluir esta línea
+    'channels',
     'valApp',
     'cloudinary',
     'cloudinary_storage',    
@@ -107,7 +109,7 @@ DATABASES = {
         'USER': 'root',
         'PASSWORD': 'LgRkCRJstseaSJLfMZwSPSEcHlkBLekE',
         'HOST': 'mysql.railway.internal',  # O la IP del servidor MySQL
-        'PORT': '3306',  # Puerto por defecto de MySQL
+        'PORT': '3306',  # Puerto por defecto de MySQL  # Puerto por defecto de MySQL
         'OPTIONS': {
             'charset': 'utf8mb4',  # Soporte para emojis y caracteres especiales
         },
@@ -163,3 +165,22 @@ STATICFILES_DIRS = [str(BASE_DIR / 'static')]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
  
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+
+LOGIN_REDIRECT_URL = '/search'
+
+LOGIN_URL = 'login_phantom'
+
+ASGI_APPLICATION = 'valProject.asgi.application'
+
+# Para ahora, usaremos canales en memoria
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [f"redis://default:xeIqxzzWCebHZKrsARPNLdsMAzhJXUqF@shinkansen.proxy.rlwy.net:34735"],
+        },
+    },
+}
+
+
