@@ -410,7 +410,6 @@ def crear_notificacion(user, message):
 
 @login_requireds
 def inventory(request):
-    crear_notificacion(request.user, "¡Has recibido una nueva espada legendaria!")
     return render(request, 'inventory.html')
 
 
@@ -431,7 +430,6 @@ def save_order(request):
     object = Objects.objects.get(pk=object_id)
     UserNotification.objects.create(user=user, object=object, price = price)
 
-    crear_notificacion(request.user, "¡Has recibido una nueva espada legendaria!")
     return JsonResponse({'status': 'ok'})
 
 

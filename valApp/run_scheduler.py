@@ -3,7 +3,7 @@ import os
 import sys
 import django
 import logging
-
+import time
 
 
 # Configurar el logging
@@ -17,6 +17,7 @@ from valApp.models import *  # Cambiado a importación absoluta
 from apscheduler.schedulers.background import BackgroundScheduler
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from funciones import functions
 logging.info(f"Running in virtual environment: {os.environ.get('VIRTUAL_ENV')}")
 
 def detectPricesNoti():
@@ -53,6 +54,7 @@ def detectPricesNoti():
 
 def start_scheduler():
     scheduler = BackgroundScheduler()
+    scheduler.add_job(functions.actualizarPrecios, 'interval', minutes=10)
     scheduler.add_job(detectPricesNoti, 'interval', minutes=1)
     scheduler.start()
     logging.info("Scheduler started.")
@@ -62,6 +64,6 @@ if __name__ == "__main__":
     try:
         # Mantener el script en ejecución
         while True:
-            pass
+            time.sleep(10)
     except (KeyboardInterrupt, SystemExit):
         logging.info("Scheduler stopped.")
