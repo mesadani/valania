@@ -2,6 +2,7 @@ from django.db import models
 from cloudinary.models import CloudinaryField
 # Create your models here.
 from django.contrib.auth.models import User
+
 class Professions(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField() 
@@ -245,3 +246,9 @@ class UserNotification(models.Model):
 
     def __str__(self):
         return f'Notificación para {self.user.username}: {self.message}'        
+    
+
+
+class ProfileUser(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    wallet = models.CharField(max_length=100, blank=True)

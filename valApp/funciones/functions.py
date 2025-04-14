@@ -10,6 +10,42 @@ from django.db import connection
 from django.db.models import Max,Min, F
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+
+
+def get_guild_and_members_by_username(username):
+    try:
+        # Obtener el miembro del guild usando el username como address
+        guild_member = GuildMembers.objects.get(address=username)
+        
+        # Obtener la guild del miembro
+        guild = guild_member.guild
+        
+        # Obtener todos los miembros de la misma guild
+        guild_members = GuildMembers.objects.filter(guild=guild)
+        
+        # Preparar la información para devolver
+        guild_info = {
+            'guild_name': guild.name,
+            'guild_description': guild.description,
+            'tag': guild.tag,
+            'image': guild.avatar,
+            'guild_members': [
+                {
+                    'name': member.name,
+                    'address': member.address,
+                    'role': member.roleuuid,
+                    'points': member.points,
+                    # Agrega más campos según sea necesario
+                }
+                for member in guild_members
+            ]
+        }
+        
+        return guild_info
+    
+    except GuildMembers.DoesNotExist:
+        return {}
+    
 def top_10_least_expensive_by_category():
     categories = ObjectCategorys.objects.all()
     top_10_least_expensive_by_category = {}
@@ -98,6 +134,11 @@ def get_crafting_details(nft,data):
                 have = item['amount']
                 break 
             
+        precio =0;            
+        priceActual = ObjectsPrices.objects.filter(object=crafting.object.id).only('price').first()
+        if priceActual:
+            precio = priceActual.price   
+        
         return [{
             'crafting_name': crafting.object.name,
             'level': crafting.level,
@@ -111,16 +152,31 @@ def get_crafting_details(nft,data):
             'image': crafting.object.image.url if crafting.object.image else '',
             'requirements': requirements_list,
             'have': have,
+            'precio' :precio
         }]
     except Crafting.DoesNotExist:
         return []
 
-def get_inverse_crafting_details(nft,data):
+
+def get_inverse_crafting_details(nft, data):
+    # Subconsulta para obtener el precio más bajo de cada objeto
+    lowest_price_subquery = ObjectsPrices.objects.filter(
+        object=OuterRef('craft__object')
+    ).values('object').annotate(
+        lowest_price=Min('price')
+    ).values('lowest_price')
+
+    # Obtener los requisitos inversos con el precio más bajo
     inverse_reqs = craftingRequirements.objects.filter(object=nft.id).select_related(
         'craft__object', 'craft__proffesion'
+    ).annotate(
+        lowest_price=Subquery(lowest_price_subquery)
     )
+
     data_dict = {item['name']: item['amount'] for item in data}
+
     return [{
+        'precio': req.lowest_price if req.lowest_price is not None else 0.0,
         'id': req.craft.object.id,
         'crafting_name': req.craft.object.name,
         'level': req.craft.level,
@@ -191,25 +247,29 @@ def importGuilds():
     guilds = phantom_wallet.getGuilds()
     for guild in guilds:
         race = Races.objects.get(name=guild.get("Race"))
-        gg = Guilds.objects.create(
-            uuid=guild.get("UUID"),
-            name=guild.get("Name"),     
-            avatar=guild.get("Avatar"),
-            tag=guild.get("TAG"),
-            race=race,
-            description=guild.get("Description"),
-            language=guild.get("Languages")[0],
-            members=guild.get("Members"),
-            announce=guild.get("Announcement"),
-            leader=guild.get("LeaderUUID"),
-            ranking=guild.get("Ranking"),
-            usdc=guild.get("USDC"))
+        gg, created = Guilds.objects.update_or_create(
+                uuid=guild.get("UUID"),
+                defaults={
+                    'uuid':guild.get("UUID"),
+                    'name':guild.get("Name"),     
+                    'avatar':guild.get("Avatar"),
+                    'tag':guild.get("TAG"),
+                    'race':race,
+                    'description':guild.get("Description"),
+                    'language':guild.get("Languages")[0],
+                    'members':guild.get("Members"),
+                    'announce':guild.get("Announcement"),
+                    'leader':guild.get("LeaderUUID"),
+                    'ranking':guild.get("Ranking"),
+                    'usdc':guild.get("USDC")
+                }
+            )
 
 def membersGuilds(members,guilda):
     for member in members:
             
             race = Races.objects.get(name=member.get("race"))
-            gg, created = GuildMembers.objects.get_or_create(
+            gg, created = GuildMembers.objects.update_or_create(
                 address=member.get("address"),
                 defaults={
                     'name': '',
@@ -277,7 +337,6 @@ def importMembersGuilds():
                 heroLvl = 0
 
 
-
             gg, created = GuildMembers.objects.update_or_create(
                 address=memberGuild['Address'],
                 defaults={
@@ -288,6 +347,7 @@ def importMembersGuilds():
                     'herokind': heroKind,
                     'heroLvl': heroLvl,
                     'profession': prof,
+                    'guild': guilda,
                     'professionMastery': memberGuild.get('ProfessionMastery', 0),  # Usa get para evitar KeyError
                     'weeklyCrafts': memberGuild.get('WeeklyCrafts', 0),  # Usa get para evitar KeyError              
                 }

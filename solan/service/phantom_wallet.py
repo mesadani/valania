@@ -561,8 +561,10 @@ def extract_nft_info_extends(nft_data):
                 #nft_info = create_or_update_object(metadata, mint, uri, amount)
                 #if nft_info:
                     #nft_list.append(nft_info)
-                nftInfo = getInfoNft(metadata, mint, uri, amount)
-                nft_list.append(nftInfo)
+                if amount != '0':
+                     nftInfo = getInfoNft(metadata, mint, uri, amount)
+                
+                     nft_list.append(nftInfo)
         except KeyError as e:
             print(f"Error de clave: {e}")  # Para depuración más detallada
             continue  # Si falta alguna clave, simplemente lo ignora

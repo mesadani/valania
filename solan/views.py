@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .service.phantom_wallet import get_balance, get_nfts, extract_nft_info, get_nft_transactions, extract_nft_info_extends
 import json
+from valApp.models import GuildMembers
 
 # Vista que renderiza el HTML donde el frontend puede interactuar con Phantom
 def connect(request):
@@ -63,7 +64,20 @@ def wallet_info(request):
             nfts = get_nfts(wallet_address)
            
             data = extract_nft_info_extends({"nfts": nfts})
-            return JsonResponse({"balance": sol_balance, "nfts": data, "data": data})
+
+            guild_member = GuildMembers.objects.get(address=wallet_address)
+        
+        # Obtener la guild del miembro
+            guild = guild_member.guild
+            
+            # Obtener todos los miembros de la misma guild
+            guild_members = GuildMembers.objects.filter(guild=guild)
+
+            # Convertir los miembros del gremio a un diccionario
+            guild_member_dict = {member.address: member.name for member in guild_members}
+
+            return JsonResponse({"balance": sol_balance, "nfts": data, "members": guild_member_dict})
+
 
         except json.JSONDecodeError as e:
             return JsonResponse({"error": f"Invalid JSON format: {str(e)}"}, status=400)

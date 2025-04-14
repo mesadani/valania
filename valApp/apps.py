@@ -8,4 +8,4 @@ class ValappConfig(AppConfig):
     def ready(self):
         if os.environ.get('RUN_MAIN') == 'true':  # evita que se ejecute dos veces con runserver
             from valApp import scheduler
-            scheduler.start()
+            #scheduler.start()

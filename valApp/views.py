@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse,JsonResponse
 # Create your views here.
-from .models import Professions, Heroes, Races, Crafting, craftingRequirements, CombatUnits,Rarities, Objects,Guilds,GuildMembers, ObjectCategorys, ObjectTypes,ObjectsPrices,UserNotification
+from .models import Professions, Heroes, Races, Crafting, craftingRequirements, CombatUnits,Rarities, Objects,Guilds,GuildMembers, ObjectCategorys, ObjectTypes,ObjectsPrices,UserNotification, ProfileUser
 from solan.service.phantom_wallet import get_nft_transactions, get_nfts, extract_nft_info, getMarketPrices
 import json
 from django.views.decorators.csrf import csrf_exempt
@@ -25,7 +25,7 @@ from django.contrib.auth.decorators import login_required as login_requireds
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from .models import Notification
-
+from solan.service import phantom_wallet
 
 def index(request):
     title = 'Welcome to the Jungle !'
@@ -152,12 +152,14 @@ def buscador_objeto(request):
 
         translated_query = GoogleTranslator(source='auto', target='en').translate(query)
 
-        print(translated_query)
-
+    
+        sol_balance = 0;
         data = []
         if wallet:
             nfts = get_nfts(wallet)       
             data = extract_nft_info({"nfts": nfts})
+           # balance = phantom_wallet.get_balance(wallet)
+            #sol_balance = balance / 1_000_000_000  # convierte de lamports a SOL
 
         
         nft = Objects.objects.filter(name__icontains=translated_query).select_related(
@@ -176,6 +178,13 @@ def buscador_objeto(request):
 
         prices = getMarketPrices(nft.objectCategory.name,nft.objectType.name,nft.name)
 
+       # priceActual = ObjectsPrices.objects.filter(object=nft.id).only('price').first()
+        #if not priceActual:
+        #    priceActual =  0
+       # else:
+       #     priceActual = priceActual.price
+
+       # print(sol_balance)
         response_data = {
             "success": True,
             "nft": functions.get_nft_data(nft),
@@ -183,7 +192,9 @@ def buscador_objeto(request):
             "crafting_details_by_level": functions.get_crafting_details(nft,data),
             "craftingInverse_details": functions.get_inverse_crafting_details(nft,data),
             "holders": holders,
-            "prices" : prices
+            "prices" : prices,
+           # "priceActual" : priceActual,
+           # "balance" : balance
 
         }
 
@@ -365,7 +376,9 @@ def verify_login(request):
         return JsonResponse({"error": "Firma inválida"}, status=400)
 
     # Autenticación exitosa, crear/obtener usuario y login
-    user, _ = User.objects.get_or_create(username=public_key[:30])  # Usamos parte de la pubkey
+    user, created = User.objects.get_or_create(username=public_key[:30])
+    if created:
+        ProfileUser.objects.create(user=user,wallet=public_key)
     login(request, user)
 
     # Eliminar nonce para evitar reuse
@@ -377,20 +390,22 @@ def logout_view(request):
     logout(request)
     return redirect('/')
 def login_phantom(request):
-
+    
     objects  = Objects.objects.all()
     notifications = []
-
+    guild = []
     if request.user.is_authenticated:
         notifications = UserNotification.objects.filter(user=request.user).order_by('-created_at')[:6]
-
-
-
         
+        profile = ProfileUser.objects.get(user=request.user)
+
+        guild = functions.get_guild_and_members_by_username(profile.wallet)
+       
 
     return render(request, 'login_phantom.html', {
         'objects': objects,
         'notifications':notifications,
+        'guild_info':guild
     
     })
 
