@@ -14,7 +14,7 @@
         <p><strong>{{ user.username }}</strong></p>
         <form action="{% url 'logout' %}" method="post" style="display: inline;">
             {% csrf_token %}
-            <button type="submit" class="btn">Cerrar sesión</button>
+            <button type="submit" class="btn">Logout</button>
         </form>
     {% else %}
         <button class="btn" onclick="connectAndLogin()">Login with Phantom</button>
@@ -68,10 +68,10 @@
             {% endfor %}
         </select>
 
-        <label for="priceInput">Precio:</label>
+        <label for="priceInput">Price:</label>
         <input type="number" id="priceInput" name="price" step="0.01" required>
 
-        <button type="button" class="btn" onclick="saveOrder()">Guardar</button>
+        <button type="button" class="btn" onclick="saveOrder()">Save</button>
     </form>
 </div>
 <div id="inventory" class="tab-content">
@@ -463,13 +463,13 @@ async function openTab(evt, tabName) {
             const mintStr = nft.mint
 
             if (!amount || amount <= 0 || !receiverStr) {
-        alert("Por favor ingresa cantidad y wallet válidas.");
+        alert("Please enter amoun and valid address.");
         return;
       }
 
       const provider = window.solana;
       if (!provider?.isPhantom) {
-        alert("Conecta Phantom Wallet.");
+        alert("Connect Phantom Wallet.");
         return;
       }
 
@@ -509,10 +509,10 @@ async function openTab(evt, tabName) {
         const signedTx = await provider.signTransaction(tx);
         const sig = await connection.sendRawTransaction(signedTx.serialize());
         await connection.confirmTransaction(sig);
-        alert("¡Enviado! TX: " + sig);
+        alert("Send! TX: " + sig);
       } catch (err) {
         console.error(err);
-        alert("Error al enviar: " + err.message);
+        alert("Error : " + err.message);
       }
         };
         card.appendChild(sendButton);
@@ -522,7 +522,6 @@ async function openTab(evt, tabName) {
           }
         }
       } catch (error) {
-        console.error('Error al conectar con Phantom:', error);
       } finally {
         document.getElementById('loading-overlay').style.display = 'none';
       }
