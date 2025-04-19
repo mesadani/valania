@@ -51,7 +51,7 @@ class Crafting(models.Model):
     
 
 class craftingRequirements(models.Model):
-    craft = models.ForeignKey(Crafting, on_delete=models.CASCADE)
+    craft = models.ForeignKey(Crafting, on_delete=models.CASCADE, related_name='requirements')
     object = models.ForeignKey(Objects, on_delete=models.CASCADE)
     quantity = models.IntegerField() 
 
@@ -106,6 +106,9 @@ class Heroes(models.Model):
     price = models.IntegerField()
     location = models.CharField(max_length=200)
     description = models.TextField()
+    mint = models.CharField(max_length=200,default=0)
+    uri = models.CharField(max_length=200,default=0)
+    nftImage = models.CharField(max_length=500,default=0)
 
     image = CloudinaryField('image', folder='heroes')
 
@@ -130,6 +133,9 @@ class CombatUnits(models.Model):
     location = models.CharField(max_length=200)
     troopPoints = models.IntegerField()
     description = models.TextField()
+    mint = models.CharField(max_length=200,default=0)
+    uri = models.CharField(max_length=200,default=0)
+    nftImage = models.CharField(max_length=500,default=0)
 
     image = CloudinaryField('image', folder='combatUnits')
 
@@ -159,7 +165,7 @@ class Pets(models.Model):
         return self.name    
 
 class ObjectsPrices(models.Model):
-    object = models.ForeignKey(Objects, on_delete=models.CASCADE)
+    object = models.ForeignKey(Objects, related_name='objectsprices_set', on_delete=models.CASCADE)
     price = models.FloatField() 
     amount = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)

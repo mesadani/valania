@@ -134,9 +134,9 @@ def extract_price_from_log(log):
     return None
 
 def importacionValania():
-    nfts = phantom_wallet.get_nfts('2vTuoHNQiief6RGTwmeUKNTkHdK5DpzaRHcs6XNfUxsV')
-    for nft in nfts:
-        print(nft)
+    nfts = phantom_wallet.get_nfts('FiG8tbM9RMnJWS7ezFqVzJsGzCRHV3V9e4kaSwZ6vzmR')
+    
+       
       
     data =  phantom_wallet.extract_nft_info_extends({"nfts": nfts})
 
@@ -195,7 +195,8 @@ def verificar_listado_nft(mint):
     else:
         print("❌ El NFT no está listado actualmente.")
 
-functions.importMembersGuilds()        
+#phantom_wallet.get_closable_accounts('GqGGU5onmSoQQVL1YKXFk5ALQuwWqK8A8y5TedFmcqy6');
+#functions.importMembersGuilds()        
 #verificar_listado_nft("6o4AZhaqmLuBrf8Sy8tGgTxZ5uPkcsbPiNTvCLbSA8NC")
 #importarDatos()
 #importacionValania()

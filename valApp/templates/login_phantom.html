@@ -26,6 +26,7 @@
     <button class="tab-button active" onclick="openTab(event, 'orders')">Orders</button>
     <button class="tab-button" onclick="openTab(event, 'inventory')">Inventory</button>
     <button class="tab-button" onclick="openTab(event, 'tab3')">Guild</button>
+    <button class="tab-button" onclick="openTab(event, 'detox')">Detox</button>
 </div>
 
 <div id="orders" class="tab-content" style="display: block;">
@@ -98,9 +99,85 @@
         {% endfor %}
     </div>
 </div>
+<div id="detox" class="tab-content">
+    <div class="detox-container">
+        <h3>Detox your wallet and reclaim SOL</h3>
+        <p>This service helps you detox your wallet from all those junk tokens you've collected along the way. We give you the opportunity to claim the fees that the Solana Network returns when you contribute to cleaning up the network by closing unused accounts.</p>
+        <div class="detox-details">
+            <div class="detox-item">
+                <span>Tokens to clean</span>
+                <span id="tokenClean" class="detox-value"></span>
+            </div>
+            <div class="detox-item">
+                <span>SOL to claim</span>
+                <span id="solClean" class="detox-value"></span>
+            </div>
+            <button class="btn detox-btn" onclick="cleanWallet()" style="background: black;">Clean</button>
+        </div>
+    </div>
+</div>
+
+</p>
+
+</div>
 {% endif %}
 
 <style>
+    .detox-container {
+        max-width: 600px;
+        margin: 0 auto;
+        text-align: center;
+        background-color: #ecf0f1;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .detox-container h3 {
+        color: #2c3e50;
+        margin-bottom: 15px;
+    }
+
+    .detox-container p {
+        color: #34495e;
+        margin-bottom: 20px;
+    }
+
+    .detox-details {
+        background-color: #2980b9;
+        padding: 15px;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .detox-item {
+        margin-bottom: 10px;
+        color: #ecf0f1;
+        font-size: 18px;
+    }
+
+    .detox-value {
+        font-weight: bold;
+        margin-left: 5px;
+    }
+
+    .detox-btn {
+        margin-top: 15px;
+        background-color: #e74c3c; /* Cambia el color de fondo para que destaque */
+        color: white;
+        padding: 10px 20px;
+        border: 2px solid #c0392b; /* Añade un borde para mayor contraste */
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s, border-color 0.3s;
+    }
+
+    .detox-btn:hover {
+        background-color: #c0392b; /* Cambia el color al pasar el ratón */
+        border-color: #e74c3c; /* Cambia el color del borde al pasar el ratón */
+    }
       .info-box, .details-box {
         background-color: #2c3e50;
         padding: 20px;
@@ -306,7 +383,8 @@
 </style>
 
 <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
-
+<script src="https://unpkg.com/@solana/web3.js@1.88.2/lib/index.iife.min.js"></script>
+<script src="https://unpkg.com/@solana/spl-token@0.3.5/lib/index.iife.min.js"></script>
 <script>
 
 
@@ -378,6 +456,73 @@ function saveOrder() {
         alert("An error occurred while saving the order.");
     });
 }
+
+async function checkClosableAccounts() {
+    document.getElementById('loading-overlay').style.display = 'flex';
+    const res = await fetch(`/get_closable_accounts`);
+    const data = await res.json();
+    console.log(data);
+    if (data.status == 'ok') {
+        $('#tokenClean').text(data.data.closable_accounts);
+        $('#solClean').text(data.data.recoverable_sol.toFixed(6))
+
+        document.getElementById('loading-overlay').style.display = 'none';
+    } else {
+        console.error("Error:", data.error);
+    }
+}
+
+async function cleanWallet() {
+    document.getElementById('loading-overlay').style.display = 'flex';
+    const connection = new solanaWeb3.Connection("https://rpc.helius.xyz/?api-key=a3d88e42-62d1-4f91-b43d-a316f334fc45");
+  const wallet = window.solana;
+  await wallet.connect();
+
+  const accounts = await connection.getParsedTokenAccountsByOwner(wallet.publicKey, {
+    programId: new solanaWeb3.PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
+  });
+
+  const closeInstructions = [];
+
+  for (let acc of accounts.value) {
+    const info = acc.account.data.parsed.info;
+    const lamports = await connection.getBalance(new solanaWeb3.PublicKey(acc.pubkey));
+    const balance = parseInt(info.tokenAmount.amount);
+    const decimals = parseInt(info.tokenAmount.decimals);
+
+    const isEmpty = balance === 0;
+    const isOwned = info.owner === wallet.publicKey.toBase58();
+
+    if (isEmpty && isOwned) {
+      closeInstructions.push(
+        splToken.Token.createCloseAccountInstruction(
+          new solanaWeb3.PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"),
+          new solanaWeb3.PublicKey(acc.pubkey),
+          wallet.publicKey, // destination of rent
+          wallet.publicKey, // authority
+          []
+        )
+      );
+    }
+  }
+
+  if (closeInstructions.length === 0) {
+    document.getElementById('loading-overlay').style.display = 'none';
+    alert("No hay cuentas vacías para cerrar.");
+    return;
+  }
+
+  const tx = new solanaWeb3.Transaction().add(...closeInstructions);
+  tx.feePayer = wallet.publicKey;
+  tx.recentBlockhash = (await connection.getRecentBlockhash()).blockhash;
+
+  const signed = await wallet.signTransaction(tx);
+  const raw = signed.serialize();
+
+  const sig = await connection.sendRawTransaction(raw);
+  document.getElementById('loading-overlay').style.display = 'none';
+  alert("Transacción enviada: " + sig);
+}
 async function openTab(evt, tabName) {
     var i, tabcontent, tabbuttons;
     tabcontent = document.getElementsByClassName("tab-content");
@@ -391,6 +536,12 @@ async function openTab(evt, tabName) {
     document.getElementById(tabName).style.display = "block";
     evt.currentTarget.className += " active";
    
+    if( tabName === 'detox'){
+
+        checkClosableAccounts()
+
+    }
+
     if(tabName === 'inventory'){
 
         try {

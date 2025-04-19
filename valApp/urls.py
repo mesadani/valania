@@ -27,5 +27,8 @@ urlpatterns = [
     path('notifications/mark-read/', views.mark_notifications_as_read, name='mark_notifications_as_read'),
     path('save-order/', views.save_order, name='save_order'),
     path('delete_order/', views.delete_order, name='delete_order'),
+    path('get_closable_accounts/', views.get_closable_accounts, name='get_closable_accounts'),
+    path('autocomplete/', views.autocomplete, name='autocomplete'),
+
 
 ]

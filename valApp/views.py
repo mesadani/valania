@@ -158,8 +158,8 @@ def buscador_objeto(request):
         if wallet:
             nfts = get_nfts(wallet)       
             data = extract_nft_info({"nfts": nfts})
-           # balance = phantom_wallet.get_balance(wallet)
-            #sol_balance = balance / 1_000_000_000  # convierte de lamports a SOL
+            balance = phantom_wallet.get_balance(wallet)
+            sol_balance = balance / 1_000_000_000  # convierte de lamports a SOL
 
         
         nft = Objects.objects.filter(name__icontains=translated_query).select_related(
@@ -178,23 +178,31 @@ def buscador_objeto(request):
 
         prices = getMarketPrices(nft.objectCategory.name,nft.objectType.name,nft.name)
 
-       # priceActual = ObjectsPrices.objects.filter(object=nft.id).only('price').first()
-        #if not priceActual:
-        #    priceActual =  0
-       # else:
-       #     priceActual = priceActual.price
+        priceActual = ObjectsPrices.objects.filter(object=nft.id).only('price').first()
+        if not priceActual:
+            priceActual =  0
+        else:
+            priceActual = priceActual.price
+
+        crafting_details_by_level = functions.get_crafting_details(nft,data);
+        totalPrice=crafting_details_by_level[0]['totalPrice'];
+        totalNecesitas=crafting_details_by_level[0]['totalNecesitas'];
+
+
 
        # print(sol_balance)
         response_data = {
             "success": True,
             "nft": functions.get_nft_data(nft),
             "transactions": transactions,
-            "crafting_details_by_level": functions.get_crafting_details(nft,data),
+            "crafting_details_by_level": crafting_details_by_level,
             "craftingInverse_details": functions.get_inverse_crafting_details(nft,data),
             "holders": holders,
             "prices" : prices,
-           # "priceActual" : priceActual,
-           # "balance" : balance
+            "priceActual" : priceActual,
+            "balance" : sol_balance,
+            "totalPrice": totalPrice,
+            "totalNecesitas":totalNecesitas
 
         }
 
@@ -303,22 +311,35 @@ def players(request):
     })
 
 
+@csrf_exempt
+def autocomplete(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        query = data.get('q', '')
+        suggestions = Objects.objects.filter(name__istartswith=query)[:10]
+        print(suggestions)
+        data = {
+            'suggestions': [{'name': obj.name, 'image': obj.image.url} for obj in suggestions]
+        }
+        return JsonResponse(data)
+
 from django.core.paginator import Paginator
 
 def market(request):
+    print("ENTRO A MARKET")
     last_update = ObjectsPrices.objects.aggregate(last_update=Max('created_at'))['last_update']
 
-    print(f"Last update: {last_update}")
+    
     # Filtrar objetos que tienen precios asociados y ordenar por el created_at más reciente de ObjectsPrices
     objects_with_prices = (
         Objects.objects
-        .filter(objectsprices__isnull=False)
-        .annotate(min_created_at=Min('objectsprices__created_at'))
+        .filter(objectsprices_set__isnull=False)
+        .annotate(min_created_at=Min('objectsprices_set__created_at'))
         .order_by('min_created_at')
         .select_related('objectCategory', 'objectType')
         .prefetch_related('objectsprices_set', 'objectsbuyprices_set')
     )
-
+    print(f"Last update: {last_update}")
     # Configurar la paginación
     paginator = Paginator(objects_with_prices, 500)  # Mostrar 10 objetos por página
     page_number = request.GET.get('page')
@@ -460,3 +481,10 @@ def delete_order(request):
     notification.delete()
 
     return JsonResponse({'status': 'ok'})
+
+
+@login_requireds
+def get_closable_accounts(request):
+    user = request.user
+    datos = phantom_wallet.get_closable_accounts(user.profileuser.wallet)
+    return JsonResponse({'status': 'ok','data':datos})

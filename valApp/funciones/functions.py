@@ -112,13 +112,49 @@ def get_crafting_details(nft,data):
         have = 0
         data_dict = {item['name']: item['amount'] for item in data}
 
-        requirements_list = [{
-            'id': req.object.id,
-            'name': req.object.name,
-            'quantity': req.quantity,
-            'image': req.object.image.url if req.object.image else '',
-            'have': data_dict.get(req.object.name, 0)
-        } for req in requirements]
+       ##### requirements_list = [{
+        #    'id': req.object.id,
+        #    'name': req.object.name,
+        #    'quantity': req.quantity,
+       #     'image': req.object.image.url if req.object.image else '',
+        #    'have': data_dict.get(req.object.name, 0),
+        #    'price': req.object.objectsprices_set.first().price if req.object.objectsprices_set.exists() else 0
+
+      #  } for req in requirements]
+
+        totalPrice = 0
+        totalNecesitas = 0;
+        requirements_list = []
+        for req in requirements:
+            # Obtener el precio más bajo del objeto
+            lowest_price = ObjectsPrices.objects.filter(object=req.object).order_by('price').first()
+            price_value = lowest_price.price if lowest_price else 0
+            have = int(data_dict.get(req.object.name, 0))
+            necesitas = req.quantity
+            necesitasPrecio = req.quantity * price_value
+            if have > 0:
+                necesitas =req.quantity - have
+                necesitasPrecio = necesitas * price_value
+                if necesitasPrecio < 0:
+                    necesitasPrecio = 0
+                totalNecesitas+= necesitasPrecio
+            else:
+                totalNecesitas+=necesitasPrecio
+           
+            totalPrice+=price_value * req.quantity
+
+            requirements_list.append({
+                'id': req.object.id,
+                'name': req.object.name,
+                'quantity': req.quantity,
+                'image': req.object.image.url if req.object.image else '',
+                'have': have,
+                'price': price_value,
+                'necesitas':necesitas,
+                'necesitasPrecio':necesitasPrecio
+            })
+
+
 
         type_slug = crafting.object.objectType.name.replace(" ", "-").lower()
         kind_slug = crafting.object.name.replace(" ", "-").lower()
@@ -152,31 +188,19 @@ def get_crafting_details(nft,data):
             'image': crafting.object.image.url if crafting.object.image else '',
             'requirements': requirements_list,
             'have': have,
-            'precio' :precio
+            'precio' :precio,
+            'totalPrice':totalPrice,
+            'totalNecesitas':totalNecesitas
         }]
     except Crafting.DoesNotExist:
         return []
 
-
-def get_inverse_crafting_details(nft, data):
-    # Subconsulta para obtener el precio más bajo de cada objeto
-    lowest_price_subquery = ObjectsPrices.objects.filter(
-        object=OuterRef('craft__object')
-    ).values('object').annotate(
-        lowest_price=Min('price')
-    ).values('lowest_price')
-
-    # Obtener los requisitos inversos con el precio más bajo
+def get_inverse_crafting_details(nft,data):
     inverse_reqs = craftingRequirements.objects.filter(object=nft.id).select_related(
         'craft__object', 'craft__proffesion'
-    ).annotate(
-        lowest_price=Subquery(lowest_price_subquery)
     )
-
     data_dict = {item['name']: item['amount'] for item in data}
-
     return [{
-        'precio': req.lowest_price if req.lowest_price is not None else 0.0,
         'id': req.craft.object.id,
         'crafting_name': req.craft.object.name,
         'level': req.craft.level,
