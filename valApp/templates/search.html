@@ -404,6 +404,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById("object-image").src = data.nft.image;
         document.getElementById("crafting_name").innerText = data.nft.name;
         document.getElementById("description").innerText = data.nft.description;
+        if(data.crafting_details_by_level.length > 0){
         document.getElementById("level").innerText = data.crafting_details_by_level[0].level;
         document.getElementById("quantity").innerText = data.crafting_details_by_level[0].quantity;
         document.getElementById("probability").innerText = data.crafting_details_by_level[0].probability;
@@ -412,6 +413,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById("urlMarket").innerHTML = `<a href="${data.crafting_details_by_level[0].urlMarket}" target="_blank">${data.crafting_details_by_level[0].urlMarket}</a>`;
         document.getElementById("supply").innerText = data.crafting_details_by_level[0].supply;
         document.getElementById("have").innerText = data.crafting_details_by_level[0].have;
+   
         // Actualizar Requisitos
         let reqList = document.getElementById("requirements-list");
         reqList.innerHTML = "";
@@ -419,11 +421,11 @@ document.addEventListener('DOMContentLoaded', function () {
             reqList.innerHTML += `
                 <li>
                     <img onclick="searchObject('${req.name}')" src="${req.image}" alt="" class="req-image"  style="cursor: pointer;">
-                    ⚒ ${req.name} - Cantidad: ${req.quantity}  HAVE: ${req.have}
+                    ⚒ ${req.name} - Cantidad: ${req.quantity}  HAVE: ${req.have} Market Price: ${req.price}
                 </li>
             `;
         });
-
+    }
         // Actualizar Objetos que se pueden craftear
         let extraList = document.getElementById("craftingInverse-list");
         extraList.innerHTML = "";
