@@ -143,6 +143,10 @@ def get_crafting_details(nft,data):
            
             totalPrice+=price_value * req.quantity
 
+            type_slug = lowest_price.object.objectType.name.replace(" ", "-").lower()
+            kind_slug = lowest_price.object.name.replace(" ", "-").lower()
+            market_url = f'https://market.valannia.com/market/{lowest_price.object.objectCategory.name}?type={type_slug}&kind={kind_slug}'
+
             requirements_list.append({
                 'id': req.object.id,
                 'name': req.object.name,
@@ -151,7 +155,8 @@ def get_crafting_details(nft,data):
                 'have': have,
                 'price': price_value,
                 'necesitas':necesitas,
-                'necesitasPrecio':necesitasPrecio
+                'necesitasPrecio':necesitasPrecio,
+                'marketUrl': market_url
             })
 
 
