@@ -184,10 +184,14 @@ def buscador_objeto(request):
             priceActual =  0
         else:
             priceActual = priceActual.price
-        print('ola');
+        
         crafting_details_by_level = functions.get_crafting_details(nft,data,amountT);
-        totalPrice=crafting_details_by_level[0]['totalPrice'];
-        totalNecesitas=crafting_details_by_level[0]['totalNecesitas'];
+        if crafting_details_by_level is not None and len(crafting_details_by_level)>0:
+            totalPrice=crafting_details_by_level[0]['totalPrice'];
+            totalNecesitas=crafting_details_by_level[0]['totalNecesitas'];
+        else:
+            totalPrice=0;
+            totalNecesitas=0;
 
 
 
