@@ -35,8 +35,19 @@
     {% for heroe in heroes %}
     <div class="hero-card" data-race-id="{{ heroe.race.id }}"  data-rarity-id="{{ heroe.rarity.id }}">
         <div class="hero-image-container">
-            <img src="{{ heroe.image.url }}" alt="{{ heroe.name }}" class="hero-image">
-        </div>
+            {% if heroe.animation %}
+            <video autoplay muted loop class="hero-video" style="
+            width: 100%;
+            height: 356px;
+            object-fit: cover;
+            border-right: 2px solid gold;
+        ">
+                <source src="{{ heroe.animation.url }}" type="video/mp4">
+                Tu navegador no soporta la etiqueta de video.
+            </video>
+            {% else %}
+                <img src="{{ heroe.image.url }}" alt="{{ heroe.name }}" class="hero-image">
+            {% endif %}        </div>
         <div class="hero-info">
             <h2>{{ heroe.name }}</h2>
             <p><strong>Type:</strong> {{ heroe.type.name }}</p>

@@ -13,7 +13,7 @@ from io import BytesIO
 from django.core.files.base import ContentFile
 import cloudinary.uploader
 # Importar modelos de Django
-from valApp.models import Objects
+from valApp.models import *
 from solan.service import phantom_wallet
 from valApp.funciones import functions
 
@@ -195,10 +195,27 @@ def verificar_listado_nft(mint):
     else:
         print("❌ El NFT no está listado actualmente.")
 
+
+
+def traspaso_animation():
+    heroes = Heroes.objects.all()
+    for hero in heroes:
+        object_with_animation = Objects.objects.filter(name__icontains=hero.name).first()
+        if object_with_animation:
+            animation = object_with_animation.animation
+            hero.animation = animation
+            hero.mint = object_with_animation.mint
+            hero.nftImage = object_with_animation.nftImage
+            hero.uri = object_with_animation.uri
+            hero.save()
+        else:
+            print(f"No se encontró un objeto para el héroe: {hero.name}")
+       
+
 #phantom_wallet.get_closable_accounts('GqGGU5onmSoQQVL1YKXFk5ALQuwWqK8A8y5TedFmcqy6');
 #functions.importMembersGuilds()        
 #verificar_listado_nft("6o4AZhaqmLuBrf8Sy8tGgTxZ5uPkcsbPiNTvCLbSA8NC")
 #importarDatos()
-#importacionValania()
+#traspaso_animation()
 #getNFTPrices("B1TKjiMGUhGk32v2yYQ5Q7Rhb2a9U8oGABAtNz4CtfSq")
 #getMaxSupply('B1TKjiMGUhGk32v2yYQ5Q7Rhb2a9U8oGABAtNz4CtfSq')

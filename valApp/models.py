@@ -34,7 +34,7 @@ class Objects(models.Model):
     uri = models.CharField(max_length=200)
     nftImage = models.CharField(max_length=500,default=0)
     supply = models.IntegerField(default=0)
-
+    animation = CloudinaryField('video', folder='objects', blank=True, null=True)    
     def __str__(self):
         return self.name
     
@@ -111,6 +111,8 @@ class Heroes(models.Model):
     nftImage = models.CharField(max_length=500,default=0)
 
     image = CloudinaryField('image', folder='heroes')
+    animation = CloudinaryField('video', folder='heroes', blank=True, null=True)    
+
 
 
     def __str__(self):
