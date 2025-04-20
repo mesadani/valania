@@ -10,7 +10,7 @@ from django.db import connection
 from django.db.models import Max,Min, F
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
-
+from django.db import transaction
 
 def get_guild_and_members_by_username(username):
     try:
@@ -218,7 +218,7 @@ def get_inverse_crafting_details(nft,data):
     } for req in inverse_reqs]
 
 
-
+@transaction.atomic 
 def actualizarPrecios():
     reset_table_objects_prices(ObjectsPrices,'valApp_objectsprices')
     reset_table_objects_prices(ObjectsBuyPrices,'valApp_objectsbuyprices')
