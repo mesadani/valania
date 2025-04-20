@@ -152,8 +152,11 @@ def getMarketPrices(category, types, kind):
         # Extraemos price y amount de cada elemento
         for item in data.get("elements", []):
             price = item.get("context", {}).get("market", {}).get("price")
-            amount = item.get("amount")
-            info.append({'price':price, 'amount': amount})
+            amount = item.get("amount", 1)
+            amount = amount if amount is not None else 1
+
+            idMarket = item.get("context", {}).get("market", {}).get("marketId")
+            info.append({'price':price, 'amount': amount, 'idMarket' :idMarket})
 
         return info;
     else:
@@ -527,6 +530,11 @@ def get_or_create_object_category_and_type(metadata):
                 category_value = atributo['value']
             elif atributo['trait_type'] == 'type'  or atributo['trait_type'] == 'Type':
                 type_value = atributo['value']
+            elif atributo['trait_type'] == 'main ability':
+                category_value = 'heroes'
+                type_value = 'heroes'
+
+           
     return category_value, type_value
 
 def get_heroes_type(metadata):
@@ -548,7 +556,14 @@ def upload_image_from_url(image_url):
         upload_result = cloudinary.uploader.upload(image_content, folder='objects')
         return upload_result['secure_url']
     return None
-
+def upload_video_from_url(video_url):
+    """Descarga y sube la imagen a Cloudinary, devuelve la URL segura"""
+    response = requests.get(video_url)
+    if response.status_code == 200:
+        video_content = ContentFile(response.content)
+        upload_result = cloudinary.uploader.upload(video_content, resource_type='video', folder='objects')
+        return upload_result['secure_url']
+    return None
 def getInfoNft(metadata, mint, uri, amount):
     return {
                 "mint": mint,
@@ -561,13 +576,13 @@ def getInfoNft(metadata, mint, uri, amount):
 def create_or_update_object(metadata, mint, uri, amount):
     """Crea o actualiza un objeto en la base de datos"""
     category_value, type_value = get_or_create_object_category_and_type(metadata)
-    if metadata['name'] == 'Mechacycle':
-        print(f"mechacycle: {category_value}")
+
         
     if category_value:
         if category_value and type_value:
             print(f"mechacycle: {category_value}")
             final_image_url = upload_image_from_url(metadata["image"])
+            final_animation_url = upload_video_from_url(metadata["animation_url"])
 
             # Usar `get_or_create` de manera eficiente con las relaciones
             object_category, _ = ObjectCategorys.objects.get_or_create(name=category_value)
@@ -594,6 +609,7 @@ def create_or_update_object(metadata, mint, uri, amount):
                         objectType=object_type,
                         objectCategory=object_category,
                         image=final_image_url,
+                        animation=final_animation_url,
                         mint=mint,
                         uri=uri,
                         nftImage=metadata['image'],
@@ -634,12 +650,12 @@ def extract_nft_info_extends(nft_data):
             if "valannia" in uri.lower():
                 metadata = obtener_json_desde_uri(uri)  # Obtener datos del JSON
                 nft_info = create_or_update_object(metadata, mint, uri, 1)
-                if nft_info:
-                    nft_list.append(nft_info)
-                #if amount != '0':
-                     #nftInfo = getInfoNft(metadata, mint, uri, amount)
+                #if nft_info:
+                    #nft_list.append(nft_info)
+                if amount != '0':
+                     nftInfo = getInfoNft(metadata, mint, uri, amount)
                 
-                     #nft_list.append(nftInfo)
+                     nft_list.append(nftInfo)
         except KeyError as e:
             print(f"Error de clave: {e}")  # Para depuración más detallada
             continue  # Si falta alguna clave, simplemente lo ignora

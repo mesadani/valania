@@ -210,8 +210,17 @@ def traspaso_animation():
             hero.save()
         else:
             print(f"No se encontró un objeto para el héroe: {hero.name}")
-       
 
+
+def probar():
+     for object in Objects.objects.all():
+         print(object.objectType.name)
+         if(object.objectType.name=="Swords"):
+            print(object)
+            prices = phantom_wallet.getMarketPrices(object.objectCategory.name, object.objectType.name, object.name)      
+            print(prices)
+
+#functions.actualizarPrecios()
 #phantom_wallet.get_closable_accounts('GqGGU5onmSoQQVL1YKXFk5ALQuwWqK8A8y5TedFmcqy6');
 #functions.importMembersGuilds()        
 #verificar_listado_nft("6o4AZhaqmLuBrf8Sy8tGgTxZ5uPkcsbPiNTvCLbSA8NC")
