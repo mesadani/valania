@@ -267,14 +267,15 @@ def stadistics(request):
     top_5_most_supply_objects = Objects.objects.filter(supply__lt=100000).order_by('-supply')[:5]
     top_5_least_supply_objects = Objects.objects.filter(supply__gt=0).order_by('supply')[:5]
 
-
+    
     top_10_most_expensive_objects = ObjectsPrices.objects.all().order_by('-price')[:10]
+    
     top_10_least_expensive_objects = ObjectsPrices.objects.all().order_by('price')[:10]
    # top_10_most_expensive_objects = ObjectsPrices.objects.values('object_id').annotate(max_price=Max('price')).order_by('-max_price')[:10]
 
    # top_10_least_expensive_objects = ObjectsPrices.objects.values('object_id').annotate(min_price=Max('price')).order_by('min_price')[:10]
 
-    
+ 
     top_10_most_expensive_by_category = functions.top_10_most_expensive_by_category()
     top_10_least_expensive_by_category = functions.top_10_least_expensive_by_category()
 
