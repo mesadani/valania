@@ -238,10 +238,12 @@ def profession_detail(request, profession_id):
             'image': crafting.object.image.url if crafting.object.image else ''
         })
 
+
     response_data = {
         'profession_name': profession.name,
         'profession_description': profession.description,
-        'crafting_details_by_level': crafting_details_by_level
+        'crafting_details_by_level': crafting_details_by_level,
+        'image': profession.image.url if profession.image else '',
     }
 
     return JsonResponse(response_data)

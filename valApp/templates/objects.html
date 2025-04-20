@@ -39,13 +39,14 @@
         display: flex;
         align-items: center;
         gap: 15px;
+        margin-bottom: 20px;
     }
 
     .profession-header img {
         width: 80px;
         height: 80px;
         border-radius: 10px;
-        border: 2px solid #1abc9c;
+       
     }
 
     .profession-header h1 {
@@ -74,16 +75,41 @@
         background: rgba(255, 255, 255, 0.1);
         border-radius: 5px;
     }
+
+    .profession-header img {
+    max-width: 100px; /* Limita el ancho máximo de las imágenes */
+    max-height: 100px; /* Limita la altura máxima de las imágenes */
+    width: auto; /* Mantiene la proporción de la imagen */
+    height: auto;
+    border-radius: 10px;
+  
+}
+
+.tabcontent {
+    overflow-x: auto; /* Permite el desplazamiento horizontal si es necesario */
+}
+
+table {
+    width: 100%; /* Hace que la tabla use el 100% del contenedor */
+    table-layout: auto; /* Permite que las columnas se ajusten automáticamente */
+}
+
+td, th {
+    padding: 10px;
+    text-align: left;
+    vertical-align: top;
+}
+
 </style>
 
 <div class="professions-container">
     {% for profession in professions %}
     <div class="profession-button" data-id="{{ profession.id }}">
+        <img src="{{ profession.image.url }}" alt="{{ profession.name }}" style="width: 50px; height: 50px; border-radius: 5px; margin-bottom: 10px;">
         {{ profession.name }}
     </div>
     {% endfor %}
 </div>
-
 <div id="profession-details"></div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -96,42 +122,45 @@
                 method: 'GET',
                 dataType: 'json',
                 success: function(data) {
-    var html = '<div class="profession-header">';
-    html += '<img src="' + data.profession_image + '" alt="' + data.profession_name + '">' +
-            '<h1>' + data.profession_name + '</h1>';
-    html += '</div>';
-    html += '<p>' + data.profession_description + '</p>';
-    html += '<div class="tab">';
-    
-    let firstLevel = Object.keys(data.crafting_details_by_level)[0]; // Obtener el primer nivel
+                    var html = '<div class="profession-header">';
+                    html += '<img src="' + data.image + '" alt="' + data.profession_name + '">' +
+                            '<h1>' + data.profession_name + '</h1>';
+                    html += '</div>';
+                    html += '<p>' + data.profession_description + '</p>';
+                    html += '<div class="tab">';
+                    
+                    let firstLevel = Object.keys(data.crafting_details_by_level)[0];
 
-    for (var level in data.crafting_details_by_level) {
-        html += `<button class="tablinks ${level == firstLevel ? 'active' : ''}" 
-                  onclick="openTab(event, 'Level${level}')">Nivel ${level}</button>`;
-    }
+                    for (var level in data.crafting_details_by_level) {
+                        html += `<button class="tablinks ${level == firstLevel ? 'active' : ''}" 
+                                  onclick="openTab(event, 'Level${level}')">Nivel ${level}</button>`;
+                    }
 
-    html += '</div>';
-    
-    for (var level in data.crafting_details_by_level) {
-        html += `<div id="Level${level}" class="tabcontent" ${level == firstLevel ? 'style="display:block;"' : ''}>`;
-        data.crafting_details_by_level[level].forEach(function(detail) {
-            html += '<div class="crafting-item">';
-            html += '<img src="' + detail.image + '" alt="' + detail.crafting_name + '" style="width:50px; height:50px; border-radius:5px; margin-right:10px;">';
-            html += '<strong>' + detail.crafting_name + '</strong>';
-            html += '<ul>';
-            html += '<li>Amount: ' + detail.quantity + '</li>';
-            html += '<li>Probability: ' + detail.probability + '</li>';
-            html += '<li>Time: ' + detail.time + '</li>';
-            html += '</ul></div>';
-        });
-        html += '</div>';
-    }
+                    html += '</div>';
+                    
+                    for (var level in data.crafting_details_by_level) {
+                        html += `<div id="Level${level}" class="tabcontent" ${level == firstLevel ? 'style="display:block;"' : ''}>`;
+                        html += '<table>';
+                        html += '<thead><tr><th></th><th>Name</th><th>Amount</th><th>Probabillity</th><th>Time</th></tr></thead>';
+                        html += '<tbody>';
+                        data.crafting_details_by_level[level].forEach(function(detail) {
+                            html += '<tr>';
+                            html += '<td><img  style="width: 50px; height: 50px;" src="' + detail.image + '" alt="' + detail.crafting_name + '"></td>';
+                            html += '<td>' + detail.crafting_name + '</td>';
+                            html += '<td>' + detail.quantity + '</td>';
+                            html += '<td>' + detail.probability + '</td>';
+                            html += '<td>' + detail.time + '</td>';
+                            html += '</tr>';
+                        });
+                        html += '</tbody></table></div>';
+                    }
 
-    $('#profession-details').html(html);
-}
+                    $('#profession-details').html(html);
+                }
             });
         });
     });
+
     function openTab(evt, tabName) {
         $('.tabcontent').hide();
         $('#' + tabName).show();
