@@ -9,7 +9,9 @@
 <div class="search-container">
     <input type="text" id="wallet" placeholder="Put Wallet">
     <input type="text" id="search-input" placeholder="Search object..." oninput="showSuggestions(this.value)">
+    <input type="text" id="amountT" placeholder="Amount you need" style="width: 10%;" defaultValue="1" value="1" min="1" numberOnly="true">
     <button onclick="searchObject()">🔍 Search</button>
+    
     <div id="suggestions" class="suggestions-container"></div>
 
 </div>
@@ -416,6 +418,7 @@ document.addEventListener('DOMContentLoaded', function () {
 // Función para realizar la búsqueda
     function searchObject(objectName) {
         wallet = $('#wallet').val();
+        amountT = $('#amountT').val();
         // Si no se pasa un nombre, buscamos por el valor del campo de entrada
         let query = objectName || document.getElementById('search-input').value;
 
@@ -423,11 +426,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Mostrar el loading
         document.getElementById('loading-overlay').style.display = 'flex';
-
+        
         fetch(`/buscador_objeto/`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ q: query, wallet : wallet})
+            body: JSON.stringify({ q: query, wallet : wallet,amountT:amountT })
         })
         .then(response => response.json())
         .then(data => {
@@ -447,6 +450,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Función para actualizar los datos de la página
     function actualizarPagina(data) {
+
+        amountT = $('#amountT').val();
         // Actualizar Información
         document.getElementById("object-image").src = data.nft.image;
         document.getElementById("crafting_name").innerText = data.nft.name;
@@ -460,9 +465,9 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById("urlMarket").innerHTML = `<a href="${data.crafting_details_by_level[0].urlMarket}" target="_blank">${data.crafting_details_by_level[0].urlMarket}</a>`;
         document.getElementById("supply").innerText = data.crafting_details_by_level[0].supply;
         document.getElementById("have").innerText = data.crafting_details_by_level[0].have;
-        document.getElementById("totalPrice").innerText = data.crafting_details_by_level[0].totalPrice;
+        document.getElementById("totalPrice").innerText = data.crafting_details_by_level[0].totalPrice ;
         document.getElementById("haveSol").innerText = data.balance;
-        document.getElementById("needSol").innerText = data.crafting_details_by_level[0].totalNecesitas;
+        document.getElementById("needSol").innerText = data.crafting_details_by_level[0].totalNecesitas ;
    
         // Actualizar Requisitos
         let reqList = document.getElementById("requirements-list");
@@ -471,7 +476,7 @@ document.addEventListener('DOMContentLoaded', function () {
             reqList.innerHTML += `
                 <li>
                     <img onclick="searchObject('${req.name}')" src="${req.image}" alt="" class="req-image"  style="cursor: pointer;">
-                    ⚒ ${req.name} - Cantidad: ${req.quantity}  HAVE: ${req.have} Market Price: ${req.price} <span style="color: red;">Sol you need: ${req.necesitasPrecio}</span>
+                    ⚒ ${req.name} - Cantidad: ${req.quantity}  HAVE: ${req.have} Market Price: ${req.price} <span style="color: red;">Sol you need: ${req.necesitasPrecio }</span>
                         <a href="${req.marketUrl}" target="_blank">
                         <i class="fas fa-external-link-alt"></i>
                         </a>

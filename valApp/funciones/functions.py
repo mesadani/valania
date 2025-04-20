@@ -104,7 +104,7 @@ def get_nft_data(nft):
     }
 
 
-def get_crafting_details(nft,data):
+def get_crafting_details(nft,data,amountT):
     try:
         crafting = Crafting.objects.select_related('object__objectType', 'object__objectCategory', 'proffesion').get(object=nft.id)
 
@@ -130,10 +130,10 @@ def get_crafting_details(nft,data):
             lowest_price = ObjectsPrices.objects.filter(object=req.object).order_by('price').first()
             price_value = lowest_price.price if lowest_price else 0
             have = int(data_dict.get(req.object.name, 0))
-            necesitas = req.quantity
-            necesitasPrecio = req.quantity * price_value
+            necesitas = int(req.quantity * amountT)
+            necesitasPrecio = int((req.quantity * amountT)) * price_value
             if have > 0:
-                necesitas =req.quantity - have
+                necesitas =int((req.quantity * amountT)) - have
                 necesitasPrecio = necesitas * price_value
                 if necesitasPrecio < 0:
                     necesitasPrecio = 0
@@ -141,7 +141,7 @@ def get_crafting_details(nft,data):
             else:
                 totalNecesitas+=necesitasPrecio
            
-            totalPrice+=price_value * req.quantity
+            totalPrice+=price_value * int((req.quantity * amountT))
 
             type_slug = lowest_price.object.objectType.name.replace(" ", "-").lower()
             kind_slug = lowest_price.object.name.replace(" ", "-").lower()
@@ -150,7 +150,7 @@ def get_crafting_details(nft,data):
             requirements_list.append({
                 'id': req.object.id,
                 'name': req.object.name,
-                'quantity': req.quantity,
+                'quantity': req.quantity * amountT,
                 'image': req.object.image.url if req.object.image else '',
                 'have': have,
                 'price': price_value,
@@ -183,7 +183,7 @@ def get_crafting_details(nft,data):
         return [{
             'crafting_name': crafting.object.name,
             'level': crafting.level,
-            'quantity': crafting.quantity,
+            'quantity': crafting.quantity ,
             'probability': crafting.probability,
             'time': crafting.time,
             'profesion': crafting.proffesion.name,

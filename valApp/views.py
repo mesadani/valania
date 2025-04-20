@@ -147,6 +147,7 @@ def buscador_objeto(request):
         data = json.loads(request.body)
         query = data.get('q', '')
         wallet = data.get('wallet', '')
+        amountT = data.get('amountT', '')
         if not query:
             return JsonResponse({"success": False, "error": "No query provided"})
 
@@ -184,7 +185,7 @@ def buscador_objeto(request):
         else:
             priceActual = priceActual.price
 
-        crafting_details_by_level = functions.get_crafting_details(nft,data);
+        crafting_details_by_level = functions.get_crafting_details(nft,data,amountT);
         totalPrice=crafting_details_by_level[0]['totalPrice'];
         totalNecesitas=crafting_details_by_level[0]['totalNecesitas'];
 
