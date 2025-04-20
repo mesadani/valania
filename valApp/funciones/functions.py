@@ -105,9 +105,11 @@ def get_nft_data(nft):
 
 
 def get_crafting_details(nft,data,amountT):
-    try:
-        crafting = Crafting.objects.select_related('object__objectType', 'object__objectCategory', 'proffesion').get(object=nft.id)
 
+    try:
+       
+        crafting = Crafting.objects.select_related('object__objectType', 'object__objectCategory', 'proffesion').get(object=nft.id)
+      
         requirements = craftingRequirements.objects.select_related('object').filter(craft=crafting)
         have = 0
         data_dict = {item['name']: item['amount'] for item in data}
@@ -121,19 +123,22 @@ def get_crafting_details(nft,data,amountT):
         #    'price': req.object.objectsprices_set.first().price if req.object.objectsprices_set.exists() else 0
 
       #  } for req in requirements]
-
+        
         totalPrice = 0
         totalNecesitas = 0;
         requirements_list = []
         for req in requirements:
             # Obtener el precio más bajo del objeto
             lowest_price = ObjectsPrices.objects.filter(object=req.object).order_by('price').first()
-            price_value = lowest_price.price if lowest_price else 0
+   
+            price_value = lowest_price.price if lowest_price is not None else 0
+     
             have = int(data_dict.get(req.object.name, 0))
-            necesitas = int(req.quantity * amountT)
-            necesitasPrecio = int((req.quantity * amountT)) * price_value
+            necesitas = int(req.quantity) * int(amountT)
+            
+            necesitasPrecio = (int(req.quantity) * int(amountT)) * price_value
             if have > 0:
-                necesitas =int((req.quantity * amountT)) - have
+                necesitas =(int(req.quantity) * int(amountT)) - have
                 necesitasPrecio = necesitas * price_value
                 if necesitasPrecio < 0:
                     necesitasPrecio = 0
@@ -142,15 +147,28 @@ def get_crafting_details(nft,data,amountT):
                 totalNecesitas+=necesitasPrecio
            
             totalPrice+=price_value * int((req.quantity * amountT))
+           
+            if lowest_price is not None:
+                type_slug = lowest_price.object.objectType.name.replace(" ", "-").lower()
+                kind_slug = lowest_price.object.name.replace(" ", "-").lower()
+                market_url = f'https://market.valannia.com/market/{lowest_price.object.objectCategory.name}?type={type_slug}&kind={kind_slug}'
+            else:
 
-            type_slug = lowest_price.object.objectType.name.replace(" ", "-").lower()
-            kind_slug = lowest_price.object.name.replace(" ", "-").lower()
-            market_url = f'https://market.valannia.com/market/{lowest_price.object.objectCategory.name}?type={type_slug}&kind={kind_slug}'
-
+                lowest_price = Objects.objects.get(id=req.object.id)
+        
+                type_slug = lowest_price.objectType.name.replace(" ", "-").lower()
+                kind_slug = lowest_price.name.replace(" ", "-").lower()
+                market_url = f'https://market.valannia.com/market/{lowest_price.objectCategory.name}?type={type_slug}&kind={kind_slug}'
+            
+       
+            
+            
+   
+            
             requirements_list.append({
                 'id': req.object.id,
                 'name': req.object.name,
-                'quantity': req.quantity * amountT,
+                'quantity': int(req.quantity) * int(amountT),
                 'image': req.object.image.url if req.object.image else '',
                 'have': have,
                 'price': price_value,
@@ -160,7 +178,7 @@ def get_crafting_details(nft,data,amountT):
             })
 
 
-
+        
         type_slug = crafting.object.objectType.name.replace(" ", "-").lower()
         kind_slug = crafting.object.name.replace(" ", "-").lower()
 
