@@ -218,7 +218,7 @@ def get_inverse_crafting_details(nft,data):
     } for req in inverse_reqs]
 
 
-@transaction.atomic 
+
 def actualizarPrecios():
     reset_table_objects_prices(ObjectsPrices,'valApp_objectsprices')
     reset_table_objects_prices(ObjectsBuyPrices,'valApp_objectsbuyprices')
