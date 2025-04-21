@@ -259,7 +259,7 @@ def profession_detail(request, profession_id):
         'crafting_details_by_level': crafting_details_by_level,
         'image': profession.image.url if profession.image else '',
     }
-    print(response_data);
+
     return JsonResponse(response_data)
 
 def tracker(request):
@@ -334,7 +334,7 @@ def autocomplete(request):
         data = json.loads(request.body)
         query = data.get('q', '')
         suggestions = Objects.objects.filter(name__istartswith=query)[:10]
-        print(suggestions)
+
         data = {
             'suggestions': [{'name': obj.name, 'image': obj.image.url} for obj in suggestions]
         }

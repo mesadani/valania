@@ -200,7 +200,7 @@
                             detail.requirements.forEach(function(req) {
                                 html += '<div class="requirements">';
                                 html += '<img src="' + req.image + '" alt="' + req.name + '">';
-                                html += '<span>' + req.name + ' x' + (req.quantity * 3) + '</span>';
+                                html += '<span>' + req.name + ' x' + req.quantity+ '</span>';
                                 html += ' <a href="' + req.marketUrl + '" target="_blank"><i class="fas fa-external-link-alt"></i></a>';                                                      
                                 html += '</div>';
                             });

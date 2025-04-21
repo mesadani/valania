@@ -143,7 +143,7 @@ def get_crafting_details_profession(nft,data,amountT):
             requirements_list.append({
                 'id': req.object.id,
                 'name': req.object.name,
-                'quantity': int(req.quantity) * int(amountT),
+                'quantity': int(req.quantity),
                 'image': req.object.image.url if req.object.image else '',
                 'marketUrl': market_url
             })
