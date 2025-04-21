@@ -103,7 +103,55 @@ def get_nft_data(nft):
         'image': nft.image.url if nft.image else '',
     }
 
+def get_crafting_details_profession(nft,data,amountT):
+    try:
+       
+        crafting = Crafting.objects.select_related('object__objectType', 'object__objectCategory', 'proffesion').get(object=nft.id)
+      
+        requirements = craftingRequirements.objects.select_related('object').filter(craft=crafting)
+       
 
+       ##### requirements_list = [{
+        #    'id': req.object.id,
+        #    'name': req.object.name,
+        #    'quantity': req.quantity,
+       #     'image': req.object.image.url if req.object.image else '',
+        #    'have': data_dict.get(req.object.name, 0),
+        #    'price': req.object.objectsprices_set.first().price if req.object.objectsprices_set.exists() else 0
+
+      #  } for req in requirements]
+        
+        totalPrice = 0
+
+        requirements_list = []
+        for req in requirements:
+            # Obtener el precio más bajo del objeto
+            lowest_price = ObjectsPrices.objects.filter(object=req.object).order_by('price').first()
+           
+            if lowest_price is not None:
+                type_slug = lowest_price.object.objectType.name.replace(" ", "-").lower()
+                kind_slug = lowest_price.object.name.replace(" ", "-").lower()
+                market_url = f'https://market.valannia.com/market/{lowest_price.object.objectCategory.name}?type={type_slug}&kind={kind_slug}'
+            else:
+
+                lowest_price = Objects.objects.get(id=req.object.id)       
+                type_slug = lowest_price.objectType.name.replace(" ", "-").lower()
+                kind_slug = lowest_price.name.replace(" ", "-").lower()
+                market_url = f'https://market.valannia.com/market/{lowest_price.objectCategory.name}?type={type_slug}&kind={kind_slug}'
+
+            
+            requirements_list.append({
+                'id': req.object.id,
+                'name': req.object.name,
+                'quantity': int(req.quantity) * int(amountT),
+                'image': req.object.image.url if req.object.image else '',
+                'marketUrl': market_url
+            })
+
+        
+        return requirements_list
+    except Crafting.DoesNotExist:
+        return []
 def get_crafting_details(nft,data,amountT):
 
     try:

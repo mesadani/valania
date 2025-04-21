@@ -2,6 +2,33 @@
 
 {% block content %}
 <style>
+      #loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        display: none; /* Ocultar por defecto */
+        z-index: 9999; /* Asegura que cubra toda la pantalla */
+        justify-content: center;
+        align-items: center;
+    }
+
+    #loading-spinner {
+        border: 10px solid #f3f3f3;
+        border-top: 10px solid gold;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        animation: spin 1s linear infinite;
+    }
+
+    /* Animación del spinner */
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
     .professions-container {
         display: flex;
         flex-wrap: wrap;
@@ -46,7 +73,6 @@
         width: 80px;
         height: 80px;
         border-radius: 10px;
-       
     }
 
     .profession-header h1 {
@@ -77,31 +103,49 @@
     }
 
     .profession-header img {
-    max-width: 100px; /* Limita el ancho máximo de las imágenes */
-    max-height: 100px; /* Limita la altura máxima de las imágenes */
-    width: auto; /* Mantiene la proporción de la imagen */
-    height: auto;
-    border-radius: 10px;
-  
-}
+        max-width: 100px;
+        max-height: 100px;
+        width: auto;
+        height: auto;
+        border-radius: 10px;
+    }
 
-.tabcontent {
-    overflow-x: auto; /* Permite el desplazamiento horizontal si es necesario */
-}
+    .tabcontent {
+        overflow-x: auto;
+    }
 
-table {
-    width: 100%; /* Hace que la tabla use el 100% del contenedor */
-    table-layout: auto; /* Permite que las columnas se ajusten automáticamente */
-}
+    table {
+        width: 100%;
+        table-layout: auto;
+    }
 
-td, th {
-    padding: 10px;
-    text-align: left;
-    vertical-align: top;
-}
+    td, th {
+        padding: 10px;
+        text-align: left;
+        vertical-align: top;
+    }
 
+    .requirements {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .requirements img {
+        width: 30px;
+        height: 30px;
+        border-radius: 5px;
+    }
+    .fas.fa-external-link-alt {
+    margin-left: 5px;
+    color: #1abc9c;
+    font-size: 12px;
+    transition: color 0.3s;
+}
 </style>
-
+<div id="loading-overlay">
+    <div id="loading-spinner"></div>
+</div>
 <div class="professions-container">
     {% for profession in professions %}
     <div class="profession-button" data-id="{{ profession.id }}">
@@ -116,6 +160,8 @@ td, th {
 <script>
     $(document).ready(function() {
         $('.profession-button').click(function() {
+            document.getElementById('loading-overlay').style.display = 'flex';
+
             var professionId = $(this).data('id');
             $.ajax({
                 url: '/professions/' + professionId + '/',
@@ -141,23 +187,35 @@ td, th {
                     for (var level in data.crafting_details_by_level) {
                         html += `<div id="Level${level}" class="tabcontent" ${level == firstLevel ? 'style="display:block;"' : ''}>`;
                         html += '<table>';
-                        html += '<thead><tr><th></th><th>Name</th><th>Amount</th><th>Probabillity</th><th>Time</th></tr></thead>';
+                        html += '<thead><tr><th></th><th>Name</th><th>Amount</th><th>Probability</th><th>Time</th><th>Requirements</th></tr></thead>';
                         html += '<tbody>';
                         data.crafting_details_by_level[level].forEach(function(detail) {
                             html += '<tr>';
-                            html += '<td><img  style="width: 50px; height: 50px;" src="' + detail.image + '" alt="' + detail.crafting_name + '"></td>';
+                            html += '<td><img style="width: 50px; height: 50px;" src="' + detail.image + '" alt="' + detail.crafting_name + '"></td>';
                             html += '<td>' + detail.crafting_name + '</td>';
                             html += '<td>' + detail.quantity + '</td>';
                             html += '<td>' + detail.probability + '</td>';
                             html += '<td>' + detail.time + '</td>';
+                            html += '<td>';
+                            detail.requirements.forEach(function(req) {
+                                html += '<div class="requirements">';
+                                html += '<img src="' + req.image + '" alt="' + req.name + '">';
+                                html += '<span>' + req.name + ' x' + (req.quantity * 3) + '</span>';
+                                html += ' <a href="' + req.marketUrl + '" target="_blank"><i class="fas fa-external-link-alt"></i></a>';                                                      
+                                html += '</div>';
+                            });
+                            html += '</td>';
                             html += '</tr>';
                         });
                         html += '</tbody></table></div>';
                     }
+                    document.getElementById('loading-overlay').style.display = 'none';
 
                     $('#profession-details').html(html);
                 }
+                
             });
+            
         });
     });
 

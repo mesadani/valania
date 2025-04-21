@@ -234,23 +234,32 @@ def profession_detail(request, profession_id):
 
     crafting_details_by_level = defaultdict(list)
 
+    
+
     for crafting in craftings:
+        nft = Objects.objects.filter(name__icontains=crafting.object.name).select_related(
+            'objectType', 'objectCategory'
+        ).first()
+
+        requirements = functions.get_crafting_details_profession(nft,[],1);
+     
         crafting_details_by_level[crafting.level].append({
             'crafting_name': crafting.object.name,
             'quantity': crafting.quantity,
             'probability': crafting.probability,
             'time': crafting.time,
+            'requirements':requirements,
             'image': crafting.object.image.url if crafting.object.image else ''
         })
 
-
+    
     response_data = {
         'profession_name': profession.name,
         'profession_description': profession.description,
         'crafting_details_by_level': crafting_details_by_level,
         'image': profession.image.url if profession.image else '',
     }
-
+    print(response_data);
     return JsonResponse(response_data)
 
 def tracker(request):
