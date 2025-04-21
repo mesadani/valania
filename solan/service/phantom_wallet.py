@@ -118,7 +118,118 @@ def get_nft_metadata(mint_address):
     else:
         return {"error": "Error al consultar la metadata"}
 
- 
+
+
+def getMarketPricesHeroes(race):
+     # URL a la que se hace la llamada
+    url = "https://rtr.valannia.net/asset/item/list"
+    info = []
+    # Body del POST (igual al de Postman)
+    race_filter = f'"race": "{race}"'
+
+    # Payload del POST
+    payload = {
+        "pagination": {
+            "count": 50,
+            "page": 0
+        },
+        "priceOrder": "LTH",
+        "item": {
+            "systems": ["Market"],
+            "priceOrder": "LTH"
+        },
+        "category": {
+            "categories": ["Heroes"]
+        },
+        "type": {},
+        "kind": {
+            "attributes": [race_filter]
+        },
+        "variant": {}
+    }
+
+    # Headers
+    headers = {
+        "Content-Type": "application/json"
+    }
+
+    # Hacer la petición
+    response = requests.post(url, json=payload, headers=headers)
+    
+    # Aceptamos 200 OK y 201 Created
+    if response.status_code in [200, 201]:
+        data = response.json()
+
+        # Extraemos price y amount de cada elemento
+        for item in data.get("elements", []):
+            price = item.get("context", {}).get("market", {}).get("price")
+            amount = item.get("amount", 1)
+            name = item.get("kindId", 1)
+            amount = amount if amount is not None else 1
+  
+            idMarket = item.get("context", {}).get("market", {}).get("marketId")
+            info.append({'price':price, 'amount': amount,'name':name, 'idMarket' :idMarket})
+            
+
+        return info;
+    else:
+        return [];
+
+
+def getMarketPricesCombatUnits(race):
+     # URL a la que se hace la llamada
+    url = "https://rtr.valannia.net/asset/item/list"
+    info = []
+    # Body del POST (igual al de Postman)
+    race_filter = f'"race": "{race}"'
+
+    # Payload del POST
+    payload = {
+        "pagination": {
+            "count": 50,
+            "page": 0
+        },
+        "priceOrder": "LTH",
+        "item": {
+            "systems": ["Market"],
+            "priceOrder": "LTH"
+        },
+        "category": {
+            "categories": ["Combat Units"]
+        },
+        "type": {},
+        "kind": {
+            "attributes": [race_filter]
+        },
+        "variant": {}
+    }
+
+    # Headers
+    headers = {
+        "Content-Type": "application/json"
+    }
+
+    # Hacer la petición
+    response = requests.post(url, json=payload, headers=headers)
+    
+    # Aceptamos 200 OK y 201 Created
+    if response.status_code in [200, 201]:
+        data = response.json()
+
+        # Extraemos price y amount de cada elemento
+        for item in data.get("elements", []):
+            price = item.get("context", {}).get("market", {}).get("price")
+            amount = item.get("amount", 1)
+            name = item.get("kindId", 1)
+            amount = amount if amount is not None else 1
+  
+            idMarket = item.get("context", {}).get("market", {}).get("marketId")
+            info.append({'price':price, 'amount': amount,'name':name, 'idMarket' :idMarket})
+            
+
+        return info;
+    else:
+        return [];
 def getMarketPrices(category, types, kind):
     # URL a la que se hace la llamada
     url = "https://rtr.valannia.net/asset/item/list"

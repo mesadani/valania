@@ -220,7 +220,7 @@ def probar():
             prices = phantom_wallet.getMarketPrices(object.objectCategory.name, object.objectType.name, object.name)      
             print(prices)
 
-#functions.actualizarPrecios()
+functions.actualizarPrecios()
 #phantom_wallet.get_closable_accounts('GqGGU5onmSoQQVL1YKXFk5ALQuwWqK8A8y5TedFmcqy6');
 #functions.importMembersGuilds()        
 #verificar_listado_nft("6o4AZhaqmLuBrf8Sy8tGgTxZ5uPkcsbPiNTvCLbSA8NC")

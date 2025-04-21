@@ -284,42 +284,83 @@ def get_inverse_crafting_details(nft,data):
     } for req in inverse_reqs]
 
 
-
+@transaction.atomic
 def actualizarPrecios():
     reset_table_objects_prices(ObjectsPrices,'valApp_objectsprices')
     reset_table_objects_prices(ObjectsBuyPrices,'valApp_objectsbuyprices')
 
     for object in Objects.objects.all():
-        prices = phantom_wallet.getMarketPrices(object.objectCategory.name, object.objectType.name, object.name)
+        if object.objectCategory.name != "Combat Units":
+            prices = phantom_wallet.getMarketPrices(object.objectCategory.name, object.objectType.name, object.name)
 
+            if len(prices) > 0:
+                for price_data in prices:
+                    amount = price_data['amount']
+                    price = price_data['price']
+
+                    if amount and price:
+                    # Create or update the ObjectsPrices entry
+                        obj_price = ObjectsPrices.objects.create(
+                            object=object,
+                            price=price,
+                            amount=amount
+                        )
+
+            pricesBuy = phantom_wallet.getMarketActions(object.objectCategory.name, object.objectType.name, object.name)
+
+            if len(pricesBuy) > 0:
+                for price_buy_data in pricesBuy:
+                    amount = price_buy_data['amount']
+                    price = price_buy_data['price']
+
+                    if amount and price:
+                    # Create or update the ObjectsPrices entry
+                        obj_price = ObjectsBuyPrices.objects.create(
+                            object=object,
+                            price=price,
+                            amount=amount
+                        )
+          
+    races = Races.objects.all()
+    for race in races:
+       
+        prices = phantom_wallet.getMarketPricesCombatUnits(race)
+        
+        if len(prices) > 0:
+                for price_data in prices:
+                    amount = price_data['amount']
+                    price = price_data['price']
+
+                    if amount and price:
+                    # Create or update the ObjectsPrices entry
+                        object = Objects.objects.filter(name__icontains=price_data['name']).first()
+                       
+                        obj_price = ObjectsPrices.objects.create(
+                            object=object,
+                            price=price,
+                            amount=amount
+                        )
+
+
+
+        prices = phantom_wallet.getMarketPricesHeroes(race)
+        
         if len(prices) > 0:
             for price_data in prices:
-                amount = price_data['amount']
-                price = price_data['price']
+                    amount = price_data['amount']
+                    price = price_data['price']
 
-                if amount and price:
-                # Create or update the ObjectsPrices entry
-                    obj_price = ObjectsPrices.objects.create(
-                        object=object,
-                        price=price,
-                        amount=amount
-                    )
+                    if amount and price:
+                    # Create or update the ObjectsPrices entry
+                        object = Objects.objects.filter(name__icontains=price_data['name']).first()
+                       
+                        if object is not None:
+                            obj_price = ObjectsPrices.objects.create(
+                                object=object,
+                                price=price,
+                                amount=amount
+                            )
 
-        pricesBuy = phantom_wallet.getMarketActions(object.objectCategory.name, object.objectType.name, object.name)
-
-        if len(pricesBuy) > 0:
-            for price_buy_data in pricesBuy:
-                amount = price_buy_data['amount']
-                price = price_buy_data['price']
-
-                if amount and price:
-                # Create or update the ObjectsPrices entry
-                    obj_price = ObjectsBuyPrices.objects.create(
-                        object=object,
-                        price=price,
-                        amount=amount
-                    )
-                    
 
 from django.db import connection
 
