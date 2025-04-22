@@ -161,7 +161,107 @@ def get_crafting_details_professions(nft,data,amountT):
         return requirements_list
     except Crafting.DoesNotExist:
         return []
-def get_crafting_details(nft,data,amountT):
+from django.core.cache import cache
+
+def get_crafting_details(nft, data, amountT):
+    try:
+        amountT = int(amountT)
+        cache_key = f"crafting:{nft.id}:{amountT}"
+        cached = cache.get(cache_key)
+        if cached:
+            return cached
+
+        crafting = Crafting.objects.select_related(
+            'object__objectType', 'object__objectCategory', 'proffesion'
+        ).only(
+            'object__id', 'object__name', 'object__image', 'object__objectType__name',
+            'object__objectCategory__name', 'object__supply',
+            'level', 'quantity', 'probability', 'time',
+            'proffesion__name'
+        ).get(object=nft.id)
+
+        requirements = craftingRequirements.objects.select_related('object').filter(craft=crafting)
+
+        # Mapear los objetos del usuario por nombre
+        data_dict = {item['name']: item['amount'] for item in data}
+        requirements_list = []
+        total_price = 0
+        total_necesitas = 0
+
+        for req in requirements:
+            obj = req.object
+            quantity_needed = int(req.quantity) * amountT
+            have = int(data_dict.get(obj.name, 0))
+
+            # Obtener precio más bajo
+            lowest_price_obj = ObjectsPrices.objects.filter(object=obj).order_by('price').only('price').first()
+            price = lowest_price_obj.price if lowest_price_obj else 0
+
+            # Calcular lo que falta y su precio
+            necesitas = max(quantity_needed - have, 0)
+            necesitas_precio = necesitas * price
+            total_price += price * quantity_needed
+            total_necesitas += necesitas_precio
+
+            # Construir URL de mercado
+            type_slug = obj.objectType.name.replace(" ", "-").lower()
+            kind_slug = obj.name.replace(" ", "-").lower()
+            category = obj.objectCategory.name
+            market_url = f"https://market.valannia.com/market/{category}?type={type_slug}&kind={kind_slug}"
+
+            requirements_list.append({
+                'id': obj.id,
+                'name': obj.name,
+                'quantity': quantity_needed,
+                'image': obj.image.url if obj.image else '',
+                'have': have,
+                'price': price,
+                'necesitas': necesitas,
+                'necesitasPrecio': necesitas_precio,
+                'marketUrl': market_url
+            })
+
+        # Preparar info del objeto principal
+        crafting_obj = crafting.object
+        type_slug = crafting_obj.objectType.name.replace(" ", "-").lower()
+        kind_slug = crafting_obj.name.replace(" ", "-").lower()
+        category = crafting_obj.objectCategory.name
+        market_url = f"https://market.valannia.com/market/{category}?type={type_slug}&kind={kind_slug}"
+        profession_url = f"https://market.valannia.com/realms/professions/{crafting.proffesion.name.lower().replace(' ', '-')}"
+
+        # Balance del objeto principal
+        have = next((item['amount'] for item in data if item['name'] == crafting_obj.name), 0)
+
+        # Precio actual del objeto crafteado
+        price_obj = ObjectsPrices.objects.filter(object=crafting_obj.id).only('price').first()
+        precio = price_obj.price if price_obj else 0
+
+        result = [{
+            'crafting_name': crafting_obj.name,
+            'level': crafting.level,
+            'quantity': crafting.quantity,
+            'probability': crafting.probability,
+            'time': crafting.time,
+            'profesion': crafting.proffesion.name,
+            'urlMarket': market_url,
+            'urlPorfession': profession_url,
+            'supply': crafting_obj.supply,
+            'image': crafting_obj.image.url if crafting_obj.image else '',
+            'requirements': requirements_list,
+            'have': have,
+            'precio': precio,
+            'totalPrice': total_price,
+            'totalNecesitas': total_necesitas
+        }]
+
+        # Guardar en cache por 5 minutos
+        cache.set(cache_key, result, timeout=60 * 5)
+        return result
+
+    except Crafting.DoesNotExist:
+        return []
+    
+def get_crafting_detailss(nft,data,amountT):
 
     try:
        

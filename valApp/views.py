@@ -138,9 +138,93 @@ def nft_detail(request, nft_type, nft_id):
         })
 
     return render(request, 'nft_detail.html', {'nft': nft, 'transactions': transactions,'crafting_details': crafting_details,'craftingInverse_details': craftingInverse_details})
+from django.views.decorators.cache import cache_page
+from django.core.cache import cache
+import time
 
 @csrf_exempt
 def buscador_objeto(request):
+    if request.method != 'POST':
+        return JsonResponse({"success": False, "error": "Only POST requests are allowed"})
+
+    try:
+        data = json.loads(request.body)
+        query = data.get('q', '').strip()
+        wallet = data.get('wallet', '').strip()
+        amountT = int(data.get('amountT', 1))
+
+        if not query:
+            return JsonResponse({"success": False, "error": "No query provided"})
+
+        # Traducir búsqueda (puede ser cacheable si se usa mucho)
+        translated_query = GoogleTranslator(source='auto', target='en').translate(query)
+
+        # Cacheo de resultados para evitar múltiples llamadas costosas si el query + wallet son iguales
+        cache_key = f"buscador:{translated_query}:{wallet}:{amountT}"
+        cached_response = cache.get(cache_key)
+        if cached_response:
+            return JsonResponse(cached_response)
+
+        # Info del wallet (NFTs + Balance)
+        nft_data = []
+        sol_balance = 0
+        if wallet:
+            nfts = get_nfts(wallet)
+            nft_data = extract_nft_info({"nfts": nfts})
+            balance = phantom_wallet.get_balance(wallet)
+            sol_balance = balance / 1_000_000_000
+
+        # Buscar NFT relacionado
+        nft = Objects.objects.filter(name__icontains=translated_query)\
+            .select_related('objectType', 'objectCategory')\
+            .only('id', 'name', 'mint', 'objectType__name', 'objectCategory__name')\
+            .first()
+
+        if not nft:
+            return JsonResponse({"success": False, "error": "NFT not found"})
+
+        transactions = get_nft_transactions(nft.mint, 5) if nft.mint != '0' else []
+        holders = functions.getMaxSupply(nft.mint) if nft.mint != '0' else []
+
+        # Precios de mercado
+        prices = getMarketPrices(nft.objectCategory.name, nft.objectType.name, nft.name)
+        price_obj = ObjectsPrices.objects.filter(object=nft.id).only('price').first()
+        priceActual = price_obj.price if price_obj else 0
+
+        # Crafting
+        crafting_details_by_level = functions.get_crafting_details(nft, nft_data, amountT)
+        if crafting_details_by_level:
+            totalPrice = crafting_details_by_level[0]['totalPrice']
+            totalNecesitas = crafting_details_by_level[0]['totalNecesitas']
+        else:
+            totalPrice = 0
+            totalNecesitas = 0
+
+        response_data = {
+            "success": True,
+            "nft": functions.get_nft_data(nft),
+            "transactions": transactions,
+            "crafting_details_by_level": crafting_details_by_level,
+            "craftingInverse_details": functions.get_inverse_crafting_details(nft, nft_data),
+            "holders": holders,
+            "prices": prices,
+            "priceActual": priceActual,
+            "balance": sol_balance,
+            "totalPrice": totalPrice,
+            "totalNecesitas": totalNecesitas,
+        }
+
+        # Cachear por 5 min
+        cache.set(cache_key, response_data, timeout=60 * 5)
+        return JsonResponse(response_data)
+
+    except Objects.DoesNotExist:
+        return JsonResponse({"success": False, "error": "Object not found"})
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)})
+
+@csrf_exempt
+def buscador_objetos(request):
     if request.method != 'POST':
         return JsonResponse({"success": False, "error": "Only POST requests are allowed"})
 
