@@ -221,8 +221,62 @@ def buscador_objeto(request):
 def search(request):
     return render(request, 'search.html')
 
-
 def profession_detail(request, profession_id):
+    profession = get_object_or_404(Professions, id=profession_id)
+
+    # Optimizar consultas con select_related y prefetch_related
+    craftings = (
+        Crafting.objects
+        .filter(proffesion=profession)
+        .select_related('object__objectType', 'object__objectCategory')
+        .prefetch_related(
+            Prefetch('requirements', queryset=craftingRequirements.objects.select_related('object'))
+        )
+        .order_by('level')
+    )
+
+    # Obtener todos los objetos requeridos
+    required_object_ids = set()
+    for crafting in craftings:
+        required_object_ids.update([req.object.id for req in crafting.requirements.all()])
+
+    # Obtener los precios más bajos por objeto
+    lowest_prices = (
+        ObjectsPrices.objects
+        .filter(object_id__in=required_object_ids)
+        .order_by('object_id', 'price')
+    )
+
+    # Mapear precios más bajos por objeto_id
+    price_map = {}
+    for price in lowest_prices:
+        if price.object_id not in price_map:
+            price_map[price.object_id] = price
+
+    crafting_details_by_level = defaultdict(list)
+
+    for crafting in craftings:
+        nft = crafting.object
+        requirements = functions.get_crafting_details_profession(crafting, price_map)
+
+        crafting_details_by_level[crafting.level].append({
+            'crafting_name': nft.name,
+            'quantity': crafting.quantity,
+            'probability': crafting.probability,
+            'time': crafting.time,
+            'requirements': requirements,
+            'image': nft.image.url if nft.image else ''
+        })
+
+    response_data = {
+        'profession_name': profession.name,
+        'profession_description': profession.description,
+        'crafting_details_by_level': crafting_details_by_level,
+        'image': profession.image.url if profession.image else '',
+    }
+
+    return JsonResponse(response_data)
+def profession_details(request, profession_id):
     profession = get_object_or_404(Professions, id=profession_id)
 
     craftings = (

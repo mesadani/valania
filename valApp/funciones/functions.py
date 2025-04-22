@@ -102,24 +102,33 @@ def get_nft_data(nft):
         'description': nft.description,
         'image': nft.image.url if nft.image else '',
     }
+def get_crafting_details_profession(crafting, price_map):
+    requirements_list = []
 
-def get_crafting_details_profession(nft,data,amountT):
+    for req in crafting.requirements.all():
+        obj = req.object
+        lowest_price = price_map.get(obj.id)
+
+        type_slug = obj.objectType.name.replace(" ", "-").lower()
+        kind_slug = obj.name.replace(" ", "-").lower()
+        market_url = f'https://market.valannia.com/market/{obj.objectCategory.name}?type={type_slug}&kind={kind_slug}'
+
+        requirements_list.append({
+            'id': obj.id,
+            'name': obj.name,
+            'quantity': int(req.quantity),
+            'image': obj.image.url if obj.image else '',
+            'marketUrl': market_url
+        })
+
+    return requirements_list
+def get_crafting_details_professions(nft,data,amountT):
     try:
        
         crafting = Crafting.objects.select_related('object__objectType', 'object__objectCategory', 'proffesion').get(object=nft.id)
       
         requirements = craftingRequirements.objects.select_related('object').filter(craft=crafting)
-       
 
-       ##### requirements_list = [{
-        #    'id': req.object.id,
-        #    'name': req.object.name,
-        #    'quantity': req.quantity,
-       #     'image': req.object.image.url if req.object.image else '',
-        #    'have': data_dict.get(req.object.name, 0),
-        #    'price': req.object.objectsprices_set.first().price if req.object.objectsprices_set.exists() else 0
-
-      #  } for req in requirements]
         
         totalPrice = 0
 

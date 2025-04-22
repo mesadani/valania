@@ -25,7 +25,7 @@ class ObjectCategorys(models.Model):
         return self.name
 
 class Objects(models.Model):
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200, db_index=True) 
     description = models.TextField(blank=True, null=True)  # Permitir nulo y vacío
     objectType = models.ForeignKey(ObjectTypes, on_delete=models.CASCADE)
     objectCategory = models.ForeignKey(ObjectCategorys, on_delete=models.CASCADE)
@@ -167,7 +167,7 @@ class Pets(models.Model):
         return self.name    
 
 class ObjectsPrices(models.Model):
-    object = models.ForeignKey(Objects, related_name='objectsprices_set', on_delete=models.CASCADE)
+    object = models.ForeignKey(Objects, related_name='objectsprices_set', on_delete=models.CASCADE, db_index=True)
     price = models.FloatField() 
     amount = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)

@@ -308,6 +308,42 @@ def getMarketActions(category, types, kind):
         return info;
     else:
         return [];
+
+def getMarketActionsCombatUnits(category, types, kind):
+    # URL a la que se hace la llamada
+    url = "https://rtr.valannia.net/market/buy/list"
+    info = []
+    # Body del POST (igual al de Postman)
+
+    payload = {
+        "pagination":{"count":50,"page":0},
+         "priceOrder":"HTL",
+         "category": {"categories": [category]},
+         "type": {"types": [types]},
+         "kind": {"kinds": [kind]},
+         "variant":{}
+    }
+
+    # Headers
+    headers = {
+        "Content-Type": "application/json"
+    }
+
+    # Hacer la petición
+    response = requests.post(url, json=payload, headers=headers)
+
+    # Aceptamos 200 OK y 201 Created
+    if response.status_code in [200, 201]:
+        data = response.json()        
+        # Extraemos price y amount de cada elemento
+        for item in data.get("elements", []):
+            price = item.get("price")
+            amount = item.get("amount")
+            info.append({'price':price, 'amount': amount})
+
+        return info;
+    else:
+        return [];
         
 def getGuilds():
      # URL a la que se hace la llamada
