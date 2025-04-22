@@ -188,6 +188,7 @@ def get_crafting_details(nft, data, amountT):
         total_price = 0
         total_necesitas = 0
 
+        
         for req in requirements:
             obj = req.object
             quantity_needed = int(req.quantity) * amountT
@@ -220,7 +221,7 @@ def get_crafting_details(nft, data, amountT):
                 'necesitasPrecio': necesitas_precio,
                 'marketUrl': market_url
             })
-
+        
         # Preparar info del objeto principal
         crafting_obj = crafting.object
         type_slug = crafting_obj.objectType.name.replace(" ", "-").lower()
@@ -235,7 +236,7 @@ def get_crafting_details(nft, data, amountT):
         # Precio actual del objeto crafteado
         price_obj = ObjectsPrices.objects.filter(object=crafting_obj.id).only('price').first()
         precio = price_obj.price if price_obj else 0
-
+        
         result = [{
             'crafting_name': crafting_obj.name,
             'level': crafting.level,

@@ -36,7 +36,7 @@ def index(request):
         'professions': professions  # Pasar los proyectos al contexto
 
     })
-
+@cache_page(60 * 10)
 def professions(request):
     professions = Professions.objects.all();
 
@@ -143,7 +143,7 @@ from django.core.cache import cache
 import time
 
 @csrf_exempt
-def buscador_objeto(request):
+def buscador_objetos(request):
     if request.method != 'POST':
         return JsonResponse({"success": False, "error": "Only POST requests are allowed"})
 
@@ -224,7 +224,7 @@ def buscador_objeto(request):
         return JsonResponse({"success": False, "error": str(e)})
 
 @csrf_exempt
-def buscador_objetos(request):
+def buscador_objeto(request):
     if request.method != 'POST':
         return JsonResponse({"success": False, "error": "Only POST requests are allowed"})
 
@@ -263,7 +263,7 @@ def buscador_objetos(request):
         # precios
 
         prices = getMarketPrices(nft.objectCategory.name,nft.objectType.name,nft.name)
-
+        
         priceActual = ObjectsPrices.objects.filter(object=nft.id).only('price').first()
         if not priceActual:
             priceActual =  0
@@ -271,6 +271,7 @@ def buscador_objetos(request):
             priceActual = priceActual.price
         
         crafting_details_by_level = functions.get_crafting_details(nft,data,amountT);
+      
         if crafting_details_by_level is not None and len(crafting_details_by_level)>0:
             totalPrice=crafting_details_by_level[0]['totalPrice'];
             totalNecesitas=crafting_details_by_level[0]['totalNecesitas'];
@@ -279,7 +280,7 @@ def buscador_objetos(request):
             totalNecesitas=0;
 
 
-
+       
        # print(sol_balance)
         response_data = {
             "success": True,
