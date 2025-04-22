@@ -183,4 +183,12 @@ CHANNEL_LAYERS = {
     },
 }
 
-
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://:xeIqxzzWCebHZKrsARPNLdsMAzhJXUqF@shinkansen.proxy.rlwy.net:34735/0",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}

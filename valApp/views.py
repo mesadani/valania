@@ -20,7 +20,7 @@ import os
 from django.contrib.auth.models import User
 import base58
 from django.contrib.auth.decorators import login_required as login_requireds
-
+from django.views.decorators.cache import cache_page
 
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
@@ -42,7 +42,7 @@ def professions(request):
 
     return render(request, 'objects.html', {'professions': professions})
 
-
+@cache_page(60 * 10)
 def heroes(request):
     heroes = Heroes.objects.all();
     races = Races.objects.all();
@@ -50,6 +50,7 @@ def heroes(request):
 
     return render(request, 'heroes.html', {'heroes': heroes, 'races': races, 'rarities': rarities})
 
+@cache_page(60 * 10)
 def combatUnits(request):
     combatUnits = CombatUnits.objects.all();
     races = Races.objects.all();
@@ -220,7 +221,7 @@ def buscador_objeto(request):
         return JsonResponse({"success": False, "error": str(e)})
 def search(request):
     return render(request, 'search.html')
-
+@cache_page(60 * 10)
 def profession_detail(request, profession_id):
     profession = get_object_or_404(Professions, id=profession_id)
 

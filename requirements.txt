@@ -24,3 +24,4 @@ channels_redis
 numpy
 pynacl
 apscheduler
+django-redis
