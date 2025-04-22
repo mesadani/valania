@@ -483,7 +483,7 @@ def autocomplete(request):
 from django.core.paginator import Paginator
 
 def market(request):
-    print("ENTRO A MARKET")
+  
     last_update = ObjectsPrices.objects.aggregate(last_update=Max('created_at'))['last_update']
 
     

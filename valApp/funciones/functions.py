@@ -394,7 +394,7 @@ def get_inverse_crafting_details(nft,data):
     } for req in inverse_reqs]
 
 
-@transaction.atomic
+
 def actualizarPrecios():
     reset_table_objects_prices(ObjectsPrices,'valApp_objectsprices')
     reset_table_objects_prices(ObjectsBuyPrices,'valApp_objectsbuyprices')
@@ -407,13 +407,14 @@ def actualizarPrecios():
                 for price_data in prices:
                     amount = price_data['amount']
                     price = price_data['price']
-
+                    address = price_data['address']
                     if amount and price:
                     # Create or update the ObjectsPrices entry
                         obj_price = ObjectsPrices.objects.create(
                             object=object,
                             price=price,
-                            amount=amount
+                            amount=amount,
+                            address=address
                         )
 
             pricesBuy = phantom_wallet.getMarketActions(object.objectCategory.name, object.objectType.name, object.name)

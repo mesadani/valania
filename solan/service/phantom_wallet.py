@@ -265,9 +265,9 @@ def getMarketPrices(category, types, kind):
             price = item.get("context", {}).get("market", {}).get("price")
             amount = item.get("amount", 1)
             amount = amount if amount is not None else 1
-
+            address = item.get("ownerId", 0)
             idMarket = item.get("context", {}).get("market", {}).get("marketId")
-            info.append({'price':price, 'amount': amount, 'idMarket' :idMarket})
+            info.append({'price':price, 'amount': amount, 'idMarket' :idMarket, 'address' :address})
 
         return info;
     else:

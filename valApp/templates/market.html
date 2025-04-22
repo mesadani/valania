@@ -30,7 +30,7 @@
                 <th>Image</th>
                 <th>Name</th>
                 <th>Buy Orders</th>
-                <th>Prices</th>                
+                <th>Prices / Owner</th>       
                 <th>Go Market</th>
             </tr>
         </thead>
@@ -72,7 +72,7 @@
                             <div class="more-prices" style="display: none;">
                                 {% for price in sorted_prices|slice:"3:" %}
                                     <div>
-                                        Amount: {{ price.amount }}, Price: {{ price.price }}
+                                        Amount: {{ price.amount }}, Price: {{ price.price }} {{ price.address }}
                                         
                                     </div>
                                 {% endfor %}
