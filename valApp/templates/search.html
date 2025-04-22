@@ -476,7 +476,7 @@ document.addEventListener('DOMContentLoaded', function () {
             reqList.innerHTML += `
                 <li>
                     <img onclick="searchObject('${req.name}')" src="${req.image}" alt="" class="req-image"  style="cursor: pointer;">
-                    ⚒ ${req.name} - Cantidad: ${req.quantity}  HAVE: ${req.have} Market Price: ${req.price} <span style="color: red;">Sol you need: ${req.necesitasPrecio }</span>
+                    ⚒ ${req.name} - Need: ${req.quantity}  HAVE: ${req.have} Market Price: ${req.price} <span style="color: red;">Sol you need: ${req.necesitasPrecio }</span>
                         <a href="${req.marketUrl}" target="_blank">
                         <i class="fas fa-external-link-alt"></i>
                         </a>

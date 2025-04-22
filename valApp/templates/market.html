@@ -64,7 +64,7 @@
                     {% with object.objectsprices_set.all|dictsort:"price" as sorted_prices %}
                         {% for price in sorted_prices|slice:":3" %}
                             <div>
-                                Amount: {{ price.amount }}, Price: {{ price.price }}  {{ price.address }}
+                                <span style="color: bisque;">Amount: {{ price.amount }}</span> <span style="color: chartreuse;">Price: {{ price.price }}</span>  {{ price.address }} 
                         </div>
                         {% endfor %}
                         {% if sorted_prices|length > 3 %}
@@ -72,8 +72,7 @@
                             <div class="more-prices" style="display: none;">
                                 {% for price in sorted_prices|slice:"3:" %}
                                     <div>
-                                        Amount: {{ price.amount }}, Price: {{ price.price }} {{ price.address }}
-                                        
+                                        <span style="color: bisque;">Amount: {{ price.amount }}</span> <span style="color: chartreuse;">Price: {{ price.price }}</span> {{ price.address }} 
                                     </div>
                                 {% endfor %}
                             </div>
