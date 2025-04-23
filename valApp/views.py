@@ -404,16 +404,23 @@ def profession_details(request, profession_id):
 
 def tracker(request):
     return render(request, 'tracker.html')
-
+@cache_page(60 * 10)
 def guilds(request):
-    guildmembers_prefetch = Prefetch(
-        'guildmembers_set',
-        queryset=GuildMembers.objects.only('name', 'address', 'points', 'profession__name', 'professionMastery', 'ranking', 'usdc', 'weeklyCrafts').select_related('profession')
+    guildmembers_queryset = GuildMembers.objects.select_related('profession').only(
+        'name', 'address', 'points', 'profession__name',
+        'professionMastery', 'ranking', 'usdc', 'weeklyCrafts'
     )
-    guilds = Guilds.objects.all().prefetch_related(guildmembers_prefetch)
-    races = Races.objects.all()
-    return render(request, 'guilds.html', {'guilds': guilds, 'races': races})
+    
+    guilds = Guilds.objects.prefetch_related(
+        Prefetch('guildmembers_set', queryset=guildmembers_queryset)
+    )
 
+    races = Races.objects.all()
+
+    return render(request, 'guilds.html', {
+        'guilds': guilds,
+        'races': races
+    })
 
 
 def stadistics(request):
