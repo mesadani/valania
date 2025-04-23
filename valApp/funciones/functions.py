@@ -403,6 +403,7 @@ def actualizarPrecios():
         if object.objectCategory.name != "Combat Units":
             prices = phantom_wallet.getMarketPrices(object.objectCategory.name, object.objectType.name, object.name)
 
+
             if len(prices) > 0:
                 for price_data in prices:
                     amount = price_data['amount']
