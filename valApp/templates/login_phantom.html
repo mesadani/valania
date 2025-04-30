@@ -473,55 +473,82 @@ async function checkClosableAccounts() {
 }
 
 async function cleanWallet() {
+  try {
+    // Mostrar overlay de carga
     document.getElementById('loading-overlay').style.display = 'flex';
+
+    // Conexión a la red de Solana
     const connection = new solanaWeb3.Connection("https://rpc.helius.xyz/?api-key=a3d88e42-62d1-4f91-b43d-a316f334fc45");
-  const wallet = window.solana;
-  await wallet.connect();
+    const wallet = window.solana;
 
-  const accounts = await connection.getParsedTokenAccountsByOwner(wallet.publicKey, {
-    programId: new solanaWeb3.PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
-  });
-
-  const closeInstructions = [];
-
-  for (let acc of accounts.value) {
-    const info = acc.account.data.parsed.info;
-    const lamports = await connection.getBalance(new solanaWeb3.PublicKey(acc.pubkey));
-    const balance = parseInt(info.tokenAmount.amount);
-    const decimals = parseInt(info.tokenAmount.decimals);
-
-    const isEmpty = balance === 0;
-    const isOwned = info.owner === wallet.publicKey.toBase58();
-
-    if (isEmpty && isOwned) {
-      closeInstructions.push(
-        splToken.Token.createCloseAccountInstruction(
-          new solanaWeb3.PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"),
-          new solanaWeb3.PublicKey(acc.pubkey),
-          wallet.publicKey, // destination of rent
-          wallet.publicKey, // authority
-          []
-        )
-      );
+    if (!wallet || !wallet.isPhantom) {
+      alert("Phantom Wallet no está disponible.");
+      document.getElementById('loading-overlay').style.display = 'none';
+      return;
     }
-  }
 
-  if (closeInstructions.length === 0) {
+    // Conectar wallet si no está conectada
+    await wallet.connect();
+
+    // Obtener cuentas SPL
+    const accounts = await connection.getParsedTokenAccountsByOwner(wallet.publicKey, {
+      programId: new solanaWeb3.PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
+    });
+
+    const closeInstructions = [];
+    const toClosePubkeys = [];
+
+    for (let acc of accounts.value) {
+      const info = acc.account.data.parsed.info;
+      const balance = parseInt(info.tokenAmount.amount);
+      const isEmpty = balance === 0;
+      const isOwned = info.owner === wallet.publicKey.toBase58();
+
+      if (isEmpty && isOwned) {
+        closeInstructions.push(
+          splToken.Token.createCloseAccountInstruction(
+            new solanaWeb3.PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"),
+            new solanaWeb3.PublicKey(acc.pubkey),
+            wallet.publicKey,
+            wallet.publicKey,
+            []
+          )
+        );
+        toClosePubkeys.push(acc.pubkey.toBase58());
+      }
+    }
+
+    // Si no hay cuentas a cerrar
+    if (closeInstructions.length === 0) {
+      alert("No hay cuentas vacías para cerrar.");
+      document.getElementById('loading-overlay').style.display = 'none';
+      return;
+    }
+
+    // Mostrar al usuario qué cuentas se van a cerrar
+    const confirmClose = confirm(`Se cerrarán las siguientes cuentas SPL vacías:\n\n${toClosePubkeys.join('\n')}\n\n¿Deseas continuar?`);
+    if (!confirmClose) {
+      document.getElementById('loading-overlay').style.display = 'none';
+      return;
+    }
+
+    // Crear y firmar transacción
+    const tx = new solanaWeb3.Transaction().add(...closeInstructions);
+    tx.feePayer = wallet.publicKey;
+    tx.recentBlockhash = (await connection.getRecentBlockhash()).blockhash;
+
+    const signedTx = await wallet.signTransaction(tx);
+    const rawTx = signedTx.serialize();
+
+    // Enviar transacción
+    const signature = await connection.sendRawTransaction(rawTx);
     document.getElementById('loading-overlay').style.display = 'none';
-    alert("No hay cuentas vacías para cerrar.");
-    return;
+    alert("✅ Transacción enviada con éxito.\nFirma: " + signature);
+  } catch (error) {
+    console.error("Error al limpiar la wallet:", error);
+    alert("❌ Ocurrió un error: " + (error.message || error));
+    document.getElementById('loading-overlay').style.display = 'none';
   }
-
-  const tx = new solanaWeb3.Transaction().add(...closeInstructions);
-  tx.feePayer = wallet.publicKey;
-  tx.recentBlockhash = (await connection.getRecentBlockhash()).blockhash;
-
-  const signed = await wallet.signTransaction(tx);
-  const raw = signed.serialize();
-
-  const sig = await connection.sendRawTransaction(raw);
-  document.getElementById('loading-overlay').style.display = 'none';
-  alert("Transacción enviada: " + sig);
 }
 async function openTab(evt, tabName) {
     var i, tabcontent, tabbuttons;
