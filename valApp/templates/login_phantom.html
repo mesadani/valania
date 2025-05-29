@@ -482,7 +482,7 @@ async function cleanWallet() {
     const wallet = window.solana;
 
     if (!wallet || !wallet.isPhantom) {
-      alert("Phantom Wallet no está disponible.");
+      alert("Phantom Wallet not connected.");
       document.getElementById('loading-overlay').style.display = 'none';
       return;
     }
@@ -518,38 +518,50 @@ async function cleanWallet() {
       }
     }
 
-    // Si no hay cuentas a cerrar
     if (closeInstructions.length === 0) {
-      alert("No hay cuentas vacías para cerrar.");
+      alert("There are no empty accounts to close.");
       document.getElementById('loading-overlay').style.display = 'none';
       return;
     }
 
-    // Mostrar al usuario qué cuentas se van a cerrar
-    const confirmClose = confirm(`Se cerrarán las siguientes cuentas SPL vacías:\n\n${toClosePubkeys.join('\n')}\n\n¿Deseas continuar?`);
+    const confirmClose = confirm(`The following empty SPL accounts will be closed:\n\n${toClosePubkeys.join('\n')}\n\n¿Continue?`);
     if (!confirmClose) {
       document.getElementById('loading-overlay').style.display = 'none';
       return;
     }
 
-    // Crear y firmar transacción
-    const tx = new solanaWeb3.Transaction().add(...closeInstructions);
-    tx.feePayer = wallet.publicKey;
-    tx.recentBlockhash = (await connection.getRecentBlockhash()).blockhash;
+    // Dividir instrucciones en bloques pequeños (máx 8 por transacción)
+    function chunkArray(array, size) {
+      const result = [];
+      for (let i = 0; i < array.length; i += size) {
+        result.push(array.slice(i, i + size));
+      }
+      return result;
+    }
 
-    const signedTx = await wallet.signTransaction(tx);
-    const rawTx = signedTx.serialize();
+    const chunkedInstructions = chunkArray(closeInstructions, 8);
 
-    // Enviar transacción
-    const signature = await connection.sendRawTransaction(rawTx);
+    for (let i = 0; i < chunkedInstructions.length; i++) {
+      const tx = new solanaWeb3.Transaction().add(...chunkedInstructions[i]);
+      tx.feePayer = wallet.publicKey;
+      tx.recentBlockhash = (await connection.getRecentBlockhash()).blockhash;
+
+      const signedTx = await wallet.signTransaction(tx);
+      const rawTx = signedTx.serialize();
+      const signature = await connection.sendRawTransaction(rawTx);
+
+      console.log(`✅ Transacción ${i + 1}/${chunkedInstructions.length} enviada: ${signature}`);
+    }
+
     document.getElementById('loading-overlay').style.display = 'none';
-    alert("✅ Transacción enviada con éxito.\nFirma: " + signature);
+    alert("✅ Todas las cuentas vacías fueron cerradas exitosamente.");
   } catch (error) {
     console.error("Error al limpiar la wallet:", error);
     alert("❌ Ocurrió un error: " + (error.message || error));
     document.getElementById('loading-overlay').style.display = 'none';
   }
 }
+
 async function openTab(evt, tabName) {
     var i, tabcontent, tabbuttons;
     tabcontent = document.getElementsByClassName("tab-content");
