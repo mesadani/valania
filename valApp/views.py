@@ -26,7 +26,8 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from .models import Notification
 from solan.service import phantom_wallet
-
+import re
+import unicodedata
 def index(request):
     title = 'Welcome to the Jungle !'
     professions = Professions.objects.all();
@@ -41,6 +42,20 @@ def professions(request):
     professions = Professions.objects.all();
 
     return render(request, 'objects.html', {'professions': professions})
+
+def chatbotView(request):
+
+    return render(request, 'chat_bot.html')
+
+def nook(request):
+    crafting_details = phantom_wallet.get_nook()
+    context = {
+        "profession_name": "Nook Merchant",
+        "profession_description": "Intercambio de ítems con Nook",
+        "crafting_details": crafting_details
+    }
+
+    return render(request, "nook.html", context)
 
 @cache_page(60 * 10)
 def heroes(request):
@@ -606,7 +621,164 @@ def crear_notificacion(user, message):
         }
     )
 ###### AUTH VIEWS ######
+def limpiar_texto(texto):
+    texto = texto.lower()
+    texto = unicodedata.normalize('NFKD', texto).encode('ascii', 'ignore').decode('utf-8')  # Eliminar tildes
+    texto = texto.replace('?', '').replace('¿', '').replace('.', '')
+    return texto
 
+# Detectar intención con expresiones regulares más flexibles
+def detectar_intencion(pregunta):
+    pregunta = limpiar_texto(pregunta)
+
+    # Detectar héroes por raza (en inglés y español)
+    if re.search(r'(heroes|h[eé]roes).*?(raza|race)', pregunta):
+        return 'heroes_por_raza'
+
+    # Detectar materiales para craftear (en inglés y español)
+    if re.search(r'(materiales|materials).*?(craftear|craft)', pregunta):
+        return 'requisitos_crafteo'
+
+    # Detectar información sobre razas (en inglés y español)
+    if re.search(r'(informacion|info).*?(raza|race)', pregunta):
+        return 'info_raza'
+
+    # Detectar información sobre objetos (en inglés y español)
+    if re.search(r'(informacion|info).*?(objeto|item)', pregunta):
+        return 'info_objeto'
+
+    # Detectar gremios por raza (en inglés y español)
+    if re.search(r'(gremio|guild).*?(raza|race)', pregunta):
+        return 'info_guilds_raza'
+
+    # Detectar ranking de gremios (en inglés y español)
+    if re.search(r'(ranking|top).*?(gremio|guild)', pregunta):
+        return 'ranking_guilds'
+
+    # Detectar unidades de combate (en inglés y español)
+    if re.search(r'(unidad|unit).*?(combate|combat)', pregunta):
+        return 'info_unidad_combate'
+
+    # Detectar información sobre mascotas (en inglés y español)
+    if re.search(r'(mascota|pet)', pregunta):
+        return 'info_mascota'
+
+    # Detectar precio de objetos (en inglés y español)
+    if re.search(r'(precio|price).*?(objeto|item)', pregunta):
+        return 'precio_objeto'
+
+    return 'desconocida'
+
+    
+@csrf_exempt
+
+def chatbot(request):
+    pregunta_raw = request.POST.get('pregunta', '')
+    pregunta = limpiar_texto(pregunta_raw)
+    intencion = detectar_intencion(pregunta)
+
+    if intencion == "heroes_por_raza":
+        match = re.search(r'raza\s+([\w\s]+)', pregunta)
+        if match:
+            raza_nombre = match.group(1).strip()
+            try:
+                raza = Races.objects.get(name__icontains=raza_nombre)
+                heroes = Heroes.objects.filter(race=raza)
+                if not heroes.exists():
+                    return JsonResponse({'respuesta': f'No encontré héroes para la raza "{raza_nombre}".'})
+                nombres = ', '.join([h.name for h in heroes])
+                return JsonResponse({'respuesta': f'Los héroes de la raza {raza.name} son: {nombres}.'})
+            except Races.DoesNotExist:
+                return JsonResponse({'respuesta': f'No encontré la raza "{raza_nombre}".'})
+
+    elif intencion == "requisitos_crafteo":
+        match = re.search(r'craftear\s+([\w\s]+)', pregunta)
+        if not match:
+            match = re.search(r'para\s+craftear\s+([\w\s]+)', pregunta)
+        if match:
+         
+            item_nombre = match.group(1).strip()
+            try:
+                
+                objeto = Objects.objects.get(name=item_nombre)
+                print(objeto) 
+                crafteos = Crafting.objects.filter(object=objeto)
+                
+                if not crafteos.exists():
+                    return JsonResponse({'respuesta': f'No encontré recetas para craftear "{objeto.name}".'})
+                respuesta = []
+                
+                for c in crafteos:
+                    reqs = c.requirements.all()
+                    materiales = ', '.join([f'{r.quantity}x {r.object.name}' for r in reqs])
+                    respuesta.append(f'{materiales} (Profesión: {c.proffesion.name}, Nivel: {c.level})')
+                   
+                return JsonResponse({'respuesta': f'Para craftear {objeto.name} necesitas: ' + ' | '.join(respuesta)})
+            except Objects.DoesNotExist:
+                return JsonResponse({'respuesta': f'No encontré el objeto "{item_nombre}".'})
+
+    elif intencion == "info_raza":
+        match = re.search(r'raza\s+([\w\s]+)', pregunta)
+        if match:
+            raza_nombre = match.group(1).strip()
+            try:
+                raza = Races.objects.get(name__icontains=raza_nombre)
+                return JsonResponse({'respuesta': f'{raza.name}: {raza.description}'})
+            except Races.DoesNotExist:
+                return JsonResponse({'respuesta': f'No encontré información sobre la raza "{raza_nombre}".'})
+
+    elif intencion == "info_objeto":
+        match = re.search(r'objeto\s+([\w\s]+)', pregunta)
+        if match:
+            objeto_nombre = match.group(1).strip()
+            try:
+                obj = Objects.objects.get(name__icontains=objeto_nombre)
+                return JsonResponse({'respuesta': f'{obj.name}: {obj.description}'})
+            except Objects.DoesNotExist:
+                return JsonResponse({'respuesta': f'No encontré información del objeto "{objeto_nombre}".'})
+    elif intencion == "info_guilds_raza":
+        match = re.search(r'raza\s+([\w\s]+)', pregunta)
+        if match:
+            raza_nombre = match.group(1).strip()
+            try:
+                raza = Races.objects.get(name__icontains=raza_nombre)
+                guilds = Guilds.objects.filter(race=raza)
+                if not guilds.exists():
+                    return JsonResponse({'respuesta': f'No encontré gremios para la raza {raza.name}.'})
+                nombres = ', '.join([g.name for g in guilds])
+                return JsonResponse({'respuesta': f'Los gremios de la raza {raza.name} son: {nombres}.'})
+            except Races.DoesNotExist:
+                return JsonResponse({'respuesta': f'No encontré la raza "{raza_nombre}".'})
+    elif intencion == "ranking_guilds":
+        guilds = Guilds.objects.order_by('ranking')[:10]
+        if not guilds.exists():
+            return JsonResponse({'respuesta': 'No hay gremios registrados aún.'})
+        nombres = ', '.join([f'{g.ranking}. {g.name}' for g in guilds])
+        return JsonResponse({'respuesta': f'Top gremios: {nombres}.'})
+    elif intencion == "info_unidad_combate":
+        match = re.search(r'(unidad|tropa)\s+([\w\s]+)', pregunta)
+        if match:
+            nombre = match.group(2).strip()
+            try:
+                unidad = CombatUnits.objects.get(name__icontains=nombre)
+                return JsonResponse({'respuesta': f'{unidad.name}: {unidad.description} (Raza: {unidad.race.name})'})
+            except CombatUnits.DoesNotExist:
+                return JsonResponse({'respuesta': f'No encontré la unidad de combate "{nombre}".'})
+    elif intencion == "precio_objeto":
+        match = re.search(r'(precio|cuanto cuesta|valor) (de )?([\w\s]+)', pregunta)
+        if match:
+            nombre_obj = match.group(3).strip()
+            try:
+                obj = Objects.objects.get(name__icontains=nombre_obj)
+                precio = obj.objectsprices_set.last()
+                if not precio:
+                    return JsonResponse({'respuesta': f'No tengo datos de precio para "{obj.name}".'})
+                return JsonResponse({'respuesta': f'El precio más reciente de {obj.name} es {precio.price} USDC por {precio.amount} unidad(es).'})
+            except Objects.DoesNotExist:
+                return JsonResponse({'respuesta': f'No encontré el objeto "{nombre_obj}".'})                       
+                
+
+    return JsonResponse({'respuesta': 'No entendí tu pregunta. ¿Puedes formularla de otra manera? 🤖'})
 
 @login_requireds
 def inventory(request):

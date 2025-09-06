@@ -458,6 +458,47 @@ def get_nfts_recycle(wallet_address):
         return result.get('result', {}).get('value', 0)
     else:
         raise Exception("Error al consultar el saldo de la wallet")        
+    
+def get_nook():
+    url = "https://rtr.valannia.com/realms/state/merchant"
+    payload = {}
+    headers = {"Content-Type": "application/json"}
+    crafting_details = []
+
+    response = requests.post(url, json=payload, headers=headers)
+    
+    if response.status_code in [200, 201]:
+        data = response.json()
+
+        for item in data.get("recipes", []):
+            recipe = item.get("recipe", {})
+            ingredients = recipe.get("ingredients", [])
+            products = recipe.get("products", [])
+
+            for ing in ingredients:
+                ing_id = ing.get("id")
+                ing_amount = ing.get("amount")
+
+                for prod_group in products:
+                    prod_amount = prod_group.get("amount", {}).get("min", 1)
+                    probability = 1
+                    for prod in prod_group.get("products", []):
+                        prod_id = prod.get("id")
+                        probability = prod.get("probability", 1)
+
+                        crafting_details.append({
+                            "ingredient": f"{ing_amount} {ing_id}",
+                            "product": f"{prod_amount} {prod_id}",
+                            "level": recipe.get("level", 0),
+                            "quantity": prod_amount,
+                            "probability": probability,
+                            "time": recipe.get("time", 0),
+                            "image": ""  # aquí puedes meter URL de imagen si la tienes
+                        })
+    return crafting_details                    
+
+
+
 def get_nfts(wallet_address):
     headers = {
         "Content-Type": "application/json",

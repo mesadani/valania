@@ -20,7 +20,9 @@ urlpatterns = [
     path('verify-login/', views.verify_login, name='verify_login'),
     
     path('login_phantom', views.login_phantom, name='login_phantom'),
-
+    path('chatbot/', views.chatbot, name='chatbot'),
+    path('chatbotview/', views.chatbotView, name='chatbotview'),
+    path('nook/', views.nook, name='nook'),
     #### AUTH #####
     path('logout/', views.logout_view, name='logout'),
     path('inventory', views.inventory, name='inventory'),

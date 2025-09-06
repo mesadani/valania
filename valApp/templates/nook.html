@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>{{ profession_name }}</h2>
+<p>{{ profession_description }}</p>
+
+<ul>
+  {% for trade in crafting_details %}
+    <li>
+      {{ trade.ingredient }} → {{ trade.product }}
+      (Probabilidad: {{ trade.probability }}, Tiempo: {{ trade.time }})
+    </li>
+  {% endfor %}
+</ul>
+{% endblock %}
